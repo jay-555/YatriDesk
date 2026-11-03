@@ -1,7 +1,7 @@
-# Nodedr OrderRestro on CasaOS / ZimaOS
+# YatriDesk on CasaOS / ZimaOS
 
 This directory holds the app store manifest and assets that let Nodedr
-OrderRestro install as a one-click app on [CasaOS](https://casaos.io) and
+YatriDesk install as a one-click app on [CasaOS](https://casaos.io) and
 [ZimaOS](https://zimaspace.com) (ZimaOS uses the identical `x-casaos`
 compose schema).
 
@@ -21,7 +21,7 @@ don't need to wait for this to land in the official app store:
 2. Paste this URL (or the raw file contents):
 
    ```
-   https://raw.githubusercontent.com/Raktim94/nodedr-restaurant-pos/master/casaos/docker-compose.yml
+   https://raw.githubusercontent.com/jay-555/YatriDesk/master/casaos/docker-compose.yml
    ```
 
 3. **Before starting the app**, change the two placeholder secrets in the
@@ -30,7 +30,7 @@ don't need to wait for this to land in the official app store:
    `POSTGRES_PASSWORD` and the `backend` service's `DATABASE_URL`). Leaving
    the shipped placeholders is not safe beyond a quick local trial.
 4. Install. CasaOS pulls the pre-built
-   `ghcr.io/raktim94/nodedr-restaurant-pos-backend` and `...-web` images —
+   `ghcr.io/jay-555/yatrideesk-backend` and `...-web` images —
    there is no build step, so it works even though CasaOS never touches
    this repo's source.
 5. Open it from the CasaOS dashboard, or go straight to
@@ -38,7 +38,7 @@ don't need to wait for this to land in the official app store:
    restaurant account via `/signup` — no manual configuration needed.
 
 Your data (Postgres database + uploaded images) persists at
-`/DATA/AppData/nodedr-restaurant-pos/` on the CasaOS box, following the same
+`/DATA/AppData/yatrideesk/` on the CasaOS box, following the same
 convention CasaOS's own backup/restore UI expects for every other app.
 
 ## Why three containers
@@ -74,8 +74,8 @@ not `:latest`, tags). To publish a new version:
    `secrets.GITHUB_TOKEN` — no manually-created registry credential needed,
    same as sibling project nodedr-pos.
 3. Confirm both new tags exist at
-   `ghcr.io/raktim94/nodedr-restaurant-pos-backend` and
-   `ghcr.io/raktim94/nodedr-restaurant-pos-web` before updating this file —
+   `ghcr.io/jay-555/yatrideesk-backend` and
+   `ghcr.io/jay-555/yatrideesk-web` before updating this file —
    CasaOS installs will fail outright if the pinned tag doesn't exist yet.
 4. **First publish only:** GHCR packages default to private even when
    pushed from a public repo — a CasaOS install on someone else's box would
@@ -95,7 +95,7 @@ manifest, since it's a one-way action against someone else's public repo.
 When you're ready:
 
 1. Fork `IceWhaleTech/CasaOS-AppStore` and add a new
-   `Apps/Nodedr-OrderRestro/` directory containing this directory's
+   `Apps/YatriDesk/` directory containing this directory's
    `docker-compose.yml`, `icon.png`, `thumbnail.png`, and the
    `screenshot-*.png` files.
 2. Update the `icon:`, `thumbnail:`, and `screenshot_link:` URLs in the
@@ -103,7 +103,7 @@ When you're ready:
    of this one, following the same jsdelivr CDN pattern every other app in
    that store uses:
    ```
-   https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Nodedr-OrderRestro/icon.png
+   https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/YatriDesk/icon.png
    ```
 3. Open the PR against `IceWhaleTech/CasaOS-AppStore`. Their own
    `CONTRIBUTING.md` documents the current review checklist — re-check it

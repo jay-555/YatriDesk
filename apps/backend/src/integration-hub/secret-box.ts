@@ -28,7 +28,7 @@ function key(): Buffer {
     hkdfSync(
       'sha256',
       material,
-      'orderrestro-integration-secrets',
+      'yatrideesk-integration-secrets',
       process.env.INTEGRATION_SECRET_KEY ? 'dedicated-key' : 'jwt-derived-key',
       32,
     ),

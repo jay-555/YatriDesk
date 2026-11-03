@@ -1,9 +1,9 @@
-Nodedr OrderRestro
+YatriDesk
 Copyright (C) 2026 Nodedr Infotech Private Limited and Raktim Ranjit
 Licensed under the GNU Affero General Public License v3.0 only (see LICENSE).
 
-Original project: https://github.com/Raktim94/nodedr-restaurant-pos
-Official site:    https://orderrestro.nodedr.com/
+This fork:     https://github.com/jay-555/YatriDesk
+Upstream:      https://github.com/Raktim94/nodedr-restaurant-pos
 
 NETWORK USE (AGPL-3.0 section 13)
 If you run a modified version of this program as a service that other people

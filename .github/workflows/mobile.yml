@@ -36,14 +36,14 @@ jobs:
           if [ -n "$KS" ]; then
             echo "$KS" | base64 -d > "$RUNNER_TEMP/upload.jks"
             printf 'storeFile=%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$RUNNER_TEMP/upload.jks" "$KSP" "$KA" "$KKP" > "$RUNNER_TEMP/keystore.properties"
-            echo "ORDERRESTRO_KEYSTORE_PROPERTIES=$RUNNER_TEMP/keystore.properties" >> "$GITHUB_ENV"
+            echo "YATRIDEESK_KEYSTORE_PROPERTIES=$RUNNER_TEMP/keystore.properties" >> "$GITHUB_ENV"
           fi
       - name: Build
         working-directory: mobile/android
         run: ./gradlew bundleRelease assembleRelease --no-daemon
       - uses: actions/upload-artifact@v4
         with:
-          name: orderrestro-android
+          name: yatrideesk-android
           path: |
             mobile/android/app/build/outputs/bundle/release/*.aab
             mobile/android/app/build/outputs/apk/release/*.apk

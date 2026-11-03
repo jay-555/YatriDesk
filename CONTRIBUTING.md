@@ -1,4 +1,4 @@
-# Contributing to Nodedr OrderRestro
+# Contributing to YatriDesk
 
 First off — thank you for considering a contribution. This is a young,
 fast-moving project (Phases 0-3 of a 20-module scope are done; see
@@ -74,11 +74,11 @@ Docker for it.
 ### Option A — full stack via Docker
 
 ```bash
-git clone https://github.com/Raktim94/nodedr-restaurant-pos.git
-cd nodedr-restaurant-pos
+git clone https://github.com/jay-555/YatriDesk.git
+cd yatrideesk
 cp .env.example .env                 # edit JWT_SECRET / POSTGRES_PASSWORD for anything beyond local dev
 docker compose up -d --build
-docker exec nodedr-restaurant-backend npx ts-node prisma/seed.ts   # first run only — demo data + login
+docker exec yatrideesk-backend npx ts-node prisma/seed.ts   # first run only — demo data + login
 ```
 
 Open <http://localhost:1995> and sign in with `owner@demo.local` /
@@ -93,7 +93,7 @@ they are not published directly to the host.
 pnpm install
 docker compose up -d postgres                               # just the DB
 cp apps/backend/.env.example apps/backend/.env               # point DATABASE_URL at your Postgres
-pnpm --filter @nodedr-restaurant/types build
+pnpm --filter @yatrideesk/types build
 cd apps/backend && npx prisma migrate dev && npx ts-node prisma/seed.ts && cd ../..
 pnpm dev   # runs backend (:4001) and web (:1995) together via Turborepo
 ```
@@ -249,7 +249,7 @@ PR.
 
 ## Questions & discussion
 
-Use [GitHub Discussions](https://github.com/Raktim94/nodedr-restaurant-pos/discussions)
+Use [GitHub Discussions](https://github.com/jay-555/YatriDesk/discussions)
 for "how do I…" / "why does X work this way" / general chat. Use Issues
 for concrete bugs and feature requests. Keep architecture debates in
 Discussions or a tagged issue rather than scattered across PR comments,

@@ -224,7 +224,7 @@ export class WebhooksService {
         payload: {
           event: 'test',
           createdAt: new Date().toISOString(),
-          data: { message: 'Hello from OrderRestro' },
+          data: { message: 'Hello from YatriDesk' },
         },
       },
     });
@@ -298,9 +298,9 @@ export class WebhooksService {
         netOptionsFromEnv(),
       );
       statusCode = await this.post(target, body, {
-        'X-OrderRestro-Event': d.event,
-        'X-OrderRestro-Delivery': d.id,
-        'X-OrderRestro-Signature': signPayload(
+        'X-YatriDesk-Event': d.event,
+        'X-YatriDesk-Delivery': d.id,
+        'X-YatriDesk-Signature': signPayload(
           secret,
           body,
           Math.floor(Date.now() / 1000),
@@ -357,7 +357,7 @@ export class WebhooksService {
           headers: {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(body),
-            'User-Agent': 'OrderRestro-Webhooks/1',
+            'User-Agent': 'YatriDesk-Webhooks/1',
             ...headers,
           },
           // Connect to the address we already vetted; TLS still validates

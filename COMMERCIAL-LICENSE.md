@@ -1,14 +1,14 @@
 # Commercial licence
 
-NodeDR OrderRestro is released under the [GNU AGPL-3.0](LICENSE). Anyone may use, modify and redistribute it under those terms, which include publishing the source of a modified version that other people use over a network.
+YatriDesk is released under the [GNU AGPL-3.0](LICENSE). Anyone may use, modify and redistribute it under those terms, which include publishing the source of a modified version that other people use over a network.
 
-If you want to use or modify NodeDR OrderRestro without those obligations (for example to run a modified, closed-source service), a separate commercial licence is available from the copyright holder.
+If you want to use or modify YatriDesk without those obligations (for example to run a modified, closed-source service), a separate commercial licence is available from the copyright holder.
 
-Contact: mail@raktimranjit.com
+Contact: open an issue at https://github.com/jay-555/YatriDesk/issues
 
 ## Name and logo
 
-The NodeDR OrderRestro name and logo are not licensed under the AGPL. You may refer to the project by name and link to it. Do not use the name or logo for a modified version or a competing service without written permission.
+The YatriDesk name and logo are not licensed under the AGPL. You may refer to the project by name and link to it. Do not use the name or logo for a modified version or a competing service without written permission.
 
 ## Contributions
 

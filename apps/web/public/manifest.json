@@ -1,6 +1,6 @@
 {
-  "name": "OrderRestro",
-  "short_name": "OrderRestro",
+  "name": "YatriDesk",
+  "short_name": "YatriDesk",
   "description": "Offline-first restaurant management system — POS, tables, kitchen display, menu, inventory.",
   "start_url": "/",
   "scope": "/",

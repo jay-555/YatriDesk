@@ -51,17 +51,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 // MARK: - Choosing the restaurant server
 
-/// OrderRestro is self-hosted, so the phone remembers which restaurant server it
+/// YatriDesk is self-hosted, so the phone remembers which restaurant server it
 /// talks to. The address is typed or scanned once (on the bundled connect
 /// screen); after that the app opens that server's own web app, with the native
 /// bridge (push, location, haptics) available inside its pages.
 enum ServerStore {
-    static let activeKey = "orderrestro.serverUrl" // the address in use (also the pre-1.16 single address)
-    static let localKey = "orderrestro.localUrl"
-    static let externalKey = "orderrestro.externalUrl"
-    static let lastLocalKey = "orderrestro.lastLocalUrl"
-    static let lastExternalKey = "orderrestro.lastExternalUrl"
-    static let modeKey = "orderrestro.mode" // "app" or "standalone"
+    static let activeKey = "yatrideesk.serverUrl" // the address in use (also the pre-1.16 single address)
+    static let localKey = "yatrideesk.localUrl"
+    static let externalKey = "yatrideesk.externalUrl"
+    static let lastLocalKey = "yatrideesk.lastLocalUrl"
+    static let lastExternalKey = "yatrideesk.lastExternalUrl"
+    static let modeKey = "yatrideesk.mode" // "app" or "standalone"
     static var mode: String { d.string(forKey: modeKey) ?? "app" }
     private static var d: UserDefaults { UserDefaults.standard }
 
@@ -106,7 +106,7 @@ enum ServerStore {
         d.removeObject(forKey: activeKey)
     }
 
-    /// Does an OrderRestro server answer at this address within a moment?
+    /// Does an YatriDesk server answer at this address within a moment?
     static func reachable(_ base: String) -> Bool {
         guard let url = URL(string: base + "/api/v1/auth/setup-status") else { return false }
         var req = URLRequest(url: url)
@@ -155,7 +155,7 @@ enum ServerStore {
             let next = resolve()
             if !next.isEmpty && next != now { relaunchUI() }
         }
-        m.start(queue: DispatchQueue(label: "orderrestro.network"))
+        m.start(queue: DispatchQueue(label: "yatrideesk.network"))
         monitor = m
     }
 }
@@ -254,7 +254,7 @@ public class NativePrinterPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("Nothing to print.")
             return
         }
-        let name = call.getString("name") ?? "OrderRestro"
+        let name = call.getString("name") ?? "YatriDesk"
         DispatchQueue.main.async {
             let info = UIPrintInfo(dictionary: nil)
             info.outputType = .general

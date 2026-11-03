@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { SessionUser } from '@nodedr-restaurant/types';
+import type { SessionUser } from '@yatrideesk/types';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   computeOrderTotals,

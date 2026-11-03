@@ -1,4 +1,4 @@
-package com.nodedr.orderrestro;
+package com.yatrideesk.app;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -156,7 +156,7 @@ public class NativePrinterPlugin extends Plugin {
     @PluginMethod
     public void printHtml(final PluginCall call) {
         final String html = call.getString("html");
-        final String name = call.getString("name", "OrderRestro");
+        final String name = call.getString("name", "YatriDesk");
         if (html == null || html.isEmpty()) {
             call.reject("Nothing to print.");
             return;

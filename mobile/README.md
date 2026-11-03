@@ -1,6 +1,6 @@
-# OrderRestro mobile app (Android and iOS)
+# YatriDesk mobile app (Android and iOS)
 
-A Capacitor app that wraps the restaurant's own OrderRestro web app with native features. See `../docs/MOBILE-APP-PLAN.md` for the plan and `store/` for the store material.
+A Capacitor app that wraps the restaurant's own YatriDesk web app with native features. See `../docs/MOBILE-APP-PLAN.md` for the plan and `store/` for the store material.
 
 ## How it works
 
@@ -11,7 +11,7 @@ A Capacitor app that wraps the restaurant's own OrderRestro web app with native 
 
 ## Local and online address (like Immich)
 
-The connect screen takes two addresses for the same restaurant server: a **local** one (the computer on the restaurant WiFi, no internet needed) and an optional **online** one (a public https address). At launch the app asks the local address for `/api/v1/auth/setup-status`; if it answers within about 1.5 seconds it uses it, otherwise it uses the online address. On mobile data it skips the local probe. When the phone changes network the app picks again and reopens on the better address. Everything still goes to the restaurant's own server; there is no NodeDR cloud in between.
+The connect screen takes two addresses for the same restaurant server: a **local** one (the computer on the restaurant WiFi, no internet needed) and an optional **online** one (a public https address). At launch the app asks the local address for `/api/v1/auth/setup-status`; if it answers within about 1.5 seconds it uses it, otherwise it uses the online address. On mobile data it skips the local probe. When the phone changes network the app picks again and reopens on the better address. Everything still goes to the restaurant's own server; there is no YatriDesk cloud in between.
 
 Sign-in is stored per address, so a person signs in once on each address.
 
@@ -35,16 +35,16 @@ npm ci
 npx cap sync android
 cd android
 ./gradlew assembleDebug                         # app/build/outputs/apk/debug
-ORDERRESTRO_KEYSTORE_PROPERTIES=/path/keystore.properties ./gradlew bundleRelease   # signed .aab for Play
+YATRIDEESK_KEYSTORE_PROPERTIES=/path/keystore.properties ./gradlew bundleRelease   # signed .aab for Play
 ```
 
 `keystore.properties` holds `storeFile`, `storePassword`, `keyAlias`, `keyPassword`. Keep the keystore and that file out of git and back them up: losing the upload key means asking Google to reset it. Use Play App Signing.
 
 ## Push notifications (Firebase)
 
-Create a Firebase project, add the Android app `com.nodedr.orderrestro` and the iOS app with the same id, then:
+Create a Firebase project, add the Android app `com.yatrideesk.app` and the iOS app with the same id, then:
 
-- Android: put `google-services.json` in `android/app/` (it is git-ignored; a copy is kept in `~/orderrestro-signing/`). The OrderRestro Firebase project is `orderrestro-c0a12` with the Android app `com.nodedr.orderrestro` already registered. Without it the app still works and just does not register for push (it checks `ServerLink.pushReady` first).
+- Android: put `google-services.json` in `android/app/` (it is git-ignored; a copy is kept in `~/yatrideesk-signing/`). The YatriDesk Firebase project is `yatrideesk-c0a12` with the Android app `com.yatrideesk.app` already registered. Without it the app still works and just does not register for push (it checks `ServerLink.pushReady` first).
 - iOS: not finished. The Capacitor push plugin returns an APNs device token on iPhone, but the server sends through Firebase (FCM), which needs an FCM token. Before iOS push works, either add the Firebase iOS SDK (`GoogleService-Info.plist`, an APNs key uploaded to Firebase and a Firebase Messaging plugin) or have the server send to APNs directly.
 - Server: set `FCM_SERVICE_ACCOUNT_JSON` (or `FCM_SERVICE_ACCOUNT_FILE`) from Firebase > Project settings > Service accounts. Without it push stays off.
 

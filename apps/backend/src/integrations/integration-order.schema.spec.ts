@@ -1,7 +1,7 @@
 import {
   createIntegrationOrderSchema,
   integrationIdempotencyKeySchema,
-} from '@nodedr-restaurant/types';
+} from '@yatrideesk/types';
 
 const valid = {
   type: 'DELIVERY',

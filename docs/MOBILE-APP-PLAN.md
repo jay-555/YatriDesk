@@ -1,4 +1,4 @@
-# OrderRestro mobile app: Play Store and App Store plan
+# YatriDesk mobile app: Play Store and App Store plan
 
 Status (2026-11-02, version 1.15.0): **built**, see `mobile/README.md`. Android debug and signed release builds run on an emulator; the iOS project is written but not compiled; store submission still needs the owner's accounts, a Firebase project and a public demo server. The sections below are the original plan.
 
@@ -6,7 +6,7 @@ What differs from the plan: the app opens the restaurant's own web app in the na
 
 ## 1. What we are shipping
 
-One app, **OrderRestro**, for Android and iOS. It is the staff and rider app, using the same login as the web app (email or phone plus password).
+One app, **YatriDesk**, for Android and iOS. It is the staff and rider app, using the same login as the web app (email or phone plus password).
 
 | Role | What they get on the phone |
 |---|---|
@@ -72,8 +72,8 @@ Accounts and money
 - Apple Developer Program: US$99 a year, also as an organization (D-U-N-S again). Building and submitting iOS needs a Mac with Xcode, or a cloud Mac build service. Nothing in the current setup builds for iOS.
 
 Both stores
-- App name, short and full description, icon, feature graphic (Play), 5 or more screenshots per device size, support URL and email (info@nodedr.com), marketing URL (orderrestro.nodedr.com), privacy policy URL (already on the site, needs a mobile section).
-- **A review login that works.** OrderRestro is self-hosted, so the reviewers need a public demo server with sample data and a staff and a rider account. Without it the app is rejected as "cannot be used". Plan: a small demo instance on `mail` or a VPS, reset nightly.
+- App name, short and full description, icon, feature graphic (Play), 5 or more screenshots per device size, support URL and email (https://github.com/jay-555/YatriDesk), marketing URL (github.com/jay-555/YatriDesk), privacy policy URL (already on the site, needs a mobile section).
+- **A review login that works.** YatriDesk is self-hosted, so the reviewers need a public demo server with sample data and a staff and a rider account. Without it the app is rejected as "cannot be used". Plan: a small demo instance on `mail` or a VPS, reset nightly.
 - **Account deletion** inside the app and on a web page (required by both stores).
 - Age rating, content rating, export compliance (the app uses standard HTTPS only).
 
@@ -96,7 +96,7 @@ Store listing wording avoids claiming "certified" tax compliance (VERI*FACTU sta
 ## 6. Backend work this needs
 
 1. `DeviceToken` table and `POST /v1/devices` / `DELETE /v1/devices/:id`; remove tokens at sign out and on account deletion.
-2. Push sender service (FCM HTTP v1 for Android, APNs for iOS, or FCM for both). Triggered from the existing events: new online order, order accepted, rider assigned. Settings switch to turn it off. Self-hosted owners add their own FCM and APNs keys, or use a NodeDR push relay (decision below).
+2. Push sender service (FCM HTTP v1 for Android, APNs for iOS, or FCM for both). Triggered from the existing events: new online order, order accepted, rider assigned. Settings switch to turn it off. Self-hosted owners add their own FCM and APNs keys, or use a YatriDesk push relay (decision below).
 3. Mobile change feed and outbox endpoints (section 2) with tests.
 4. Account deletion endpoint that removes personal data and keeps the financial records the law requires.
 5. A connect QR in Settings that encodes the server address.
@@ -132,7 +132,7 @@ Store listing wording avoids claiming "certified" tax compliance (VERI*FACTU sta
 ## 10. Decisions needed from the owner
 
 1. Which app first: the **staff and rider app** (recommended) or the **customer app** for PKUSS.
-2. Push notifications: one NodeDR push relay that all installs use (simple for owners, NODEDR runs it) or each restaurant brings its own FCM and APNs keys (no shared service, harder to set up). Recommended: relay.
+2. Push notifications: one YatriDesk push relay that all installs use (simple for owners, YatriDesk runs it) or each restaurant brings its own FCM and APNs keys (no shared service, harder to set up). Recommended: relay.
 3. Developer accounts: confirm NODEDR INFOTECH PRIVATE LIMITED as the publisher and that a D-U-N-S number exists or can be requested.
 4. A Mac for iOS builds, or a cloud Mac service.
 5. Background location for riders in release 1 (slower approval) or later (recommended).

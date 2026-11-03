@@ -3,7 +3,7 @@ import type {
   CustomerAddressDto,
   CustomerAddressUpdateDto,
   CustomerDto,
-} from '@nodedr-restaurant/types';
+} from '@yatrideesk/types';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()

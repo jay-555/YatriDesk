@@ -1,7 +1,7 @@
-# Connecting your own website (Next.js on `www`, OrderRestro behind a Cloudflare Tunnel)
+# Connecting your own website (Next.js on `www`, YatriDesk behind a Cloudflare Tunnel)
 
 The common setup: the public site lives on separate hosting at
-`www.example.com`; OrderRestro runs on a machine in the restaurant and is
+`www.example.com`; YatriDesk runs on a machine in the restaurant and is
 reached from the internet through a Cloudflare Tunnel at `api.example.com`.
 
 ```
@@ -11,12 +11,12 @@ Visitor's browser ──HTTPS──▶ www.example.com  (Next.js, any host)
                       https://api.example.com/api/v1/integrations/...
                                    │  Cloudflare Tunnel (outbound from the restaurant)
                                    ▼
-        cloudflared ─▶ web:3000 (OrderRestro web) ─▶ backend:4000 ─▶ postgres:5432
+        cloudflared ─▶ web:3000 (YatriDesk web) ─▶ backend:4000 ─▶ postgres:5432
                                    └── only `web` is reachable; the rest stay on the private Docker network
 ```
 
-The browser never talks to OrderRestro and never sees the key: it calls the
-website's own backend, which calls OrderRestro.
+The browser never talks to YatriDesk and never sees the key: it calls the
+website's own backend, which calls YatriDesk.
 
 ## 1. Create the key
 
@@ -38,10 +38,10 @@ it issues a new secret with the same scopes and location, moves the old key's
 orders to it so status and customer lookups keep working, and revokes the old
 key immediately. Update the website's environment with the new secret.
 
-## 2. Expose OrderRestro with a Cloudflare Tunnel
+## 2. Expose YatriDesk with a Cloudflare Tunnel
 
 1. Add the domain to Cloudflare. In **Networking > Tunnels** create a
-   remotely-managed tunnel and install `cloudflared` on the OrderRestro machine
+   remotely-managed tunnel and install `cloudflared` on the YatriDesk machine
    (the dashboard shows the exact command with your token).
 2. On the tunnel's **Routes** tab choose **Add route > Published application**:
    subdomain `api`, domain `example.com`, **Service URL**:
@@ -72,7 +72,7 @@ services:
     depends_on: [web]
 ```
 
-### OrderRestro `.env` for HTTPS behind the tunnel
+### YatriDesk `.env` for HTTPS behind the tunnel
 
 ```env
 COOKIE_SECURE=true                      # staff logins over https://api.example.com
@@ -130,18 +130,18 @@ Cloudflare Access service tokens, as an extra layer in front of the key.
 
 ```env
 # .env.local on the website (server-only: no NEXT_PUBLIC_ prefix!)
-ORDERRESTRO_URL=https://api.example.com
-ORDERRESTRO_API_KEY=ordr_ext_xxxxxxxxxxxxxxxxxxxxxxxx
-ORDERRESTRO_LOCATION_ID=<location id>
+YATRIDEESK_URL=https://api.example.com
+YATRIDEESK_API_KEY=ordr_ext_xxxxxxxxxxxxxxxxxxxxxxxx
+YATRIDEESK_LOCATION_ID=<location id>
 ```
 
 ```ts
-// lib/orderrestro.ts
+// lib/yatrideesk.ts
 import 'server-only';
 
-const base = `${process.env.ORDERRESTRO_URL}/api/v1/integrations`;
+const base = `${process.env.YATRIDEESK_URL}/api/v1/integrations`;
 
-export async function orderrestro<T>(
+export async function yatrideesk<T>(
   path: string,
   init: RequestInit & { idempotencyKey?: string } = {},
 ): Promise<T> {
@@ -150,7 +150,7 @@ export async function orderrestro<T>(
     ...rest,
     cache: 'no-store',
     headers: {
-      Authorization: `Bearer ${process.env.ORDERRESTRO_API_KEY}`,
+      Authorization: `Bearer ${process.env.YATRIDEESK_API_KEY}`,
       'Content-Type': 'application/json',
       ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
     },
@@ -161,18 +161,18 @@ export async function orderrestro<T>(
 
 export class OrderrestroError extends Error {
   constructor(public status: number, public body: string) {
-    super(`OrderRestro ${status}`); // never put request data (phone/address) in the message
+    super(`YatriDesk ${status}`); // never put request data (phone/address) in the message
   }
 }
 ```
 
 ```ts
-// app/api/order/route.ts   (the browser posts here, never to OrderRestro)
+// app/api/order/route.ts   (the browser posts here, never to YatriDesk)
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { orderrestro, OrderrestroError } from '@/lib/orderrestro';
+import { yatrideesk, OrderrestroError } from '@/lib/yatrideesk';
 
-const loc = process.env.ORDERRESTRO_LOCATION_ID!;
+const loc = process.env.YATRIDEESK_LOCATION_ID!;
 const Body = z.object({
   idempotencyKey: z.string().uuid(), // generated once when the checkout page loads
   type: z.enum(['TAKEAWAY', 'DELIVERY']),
@@ -193,7 +193,7 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: 'Invalid order' }, { status: 400 });
   const { idempotencyKey, ...order } = parsed.data; // no prices: the server prices the order
   try {
-    const placed = await orderrestro<{ id: string }>(`/locations/${loc}/orders`, {
+    const placed = await yatrideesk<{ id: string }>(`/locations/${loc}/orders`, {
       method: 'POST',
       body: JSON.stringify(order),
       idempotencyKey,
@@ -211,12 +211,12 @@ export async function POST(req: Request) {
 // app/api/order/[id]/route.ts  (status page; add your own check that this
 // visitor owns the order, e.g. a signed cookie set when they placed it)
 import { NextResponse } from 'next/server';
-import { orderrestro } from '@/lib/orderrestro';
+import { yatrideesk } from '@/lib/yatrideesk';
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const order = await orderrestro<any>(
-    `/locations/${process.env.ORDERRESTRO_LOCATION_ID}/orders/${encodeURIComponent(id)}`,
+  const order = await yatrideesk<any>(
+    `/locations/${process.env.YATRIDEESK_LOCATION_ID}/orders/${encodeURIComponent(id)}`,
   );
   // Public status page: return only what the visitor needs.
   return NextResponse.json({ status: order.status, acceptance: order.acceptance,
@@ -226,7 +226,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 // Backend-only fulfilment lookup (customer mobile + address), e.g. for your own
 // notification job. Requires the orders:read_customer scope; never forward this
 // to the browser:
-//   orderrestro(`/locations/${loc}/orders/${id}?include=customer`)
+//   yatrideesk(`/locations/${loc}/orders/${id}?include=customer`)
 ```
 
 Order IDs are unguessable but not secret, so the website must prove a visitor
@@ -264,7 +264,7 @@ placed the order.
 ## 4. Check it works
 
 ```bash
-curl -sS -H "Authorization: Bearer $ORDERRESTRO_API_KEY" \
+curl -sS -H "Authorization: Bearer $YATRIDEESK_API_KEY" \
   https://api.example.com/api/v1/integrations/locations        # 200 with your key
 curl -sS -o /dev/null -w '%{http_code}\n' https://api.example.com/api/v1/integrations/locations  # 401 without
 curl -sS -o /dev/null -w '%{http_code}\n' https://api.example.com/api/docs                        # 404 in production

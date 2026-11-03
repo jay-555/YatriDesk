@@ -1,4 +1,4 @@
-package com.nodedr.orderrestro;
+package com.yatrideesk.app;
 
 import android.os.Bundle;
 import android.view.View;
@@ -80,7 +80,7 @@ public class MainActivity extends BridgeActivity {
                     // Pick the local or online address again, then reopen.
                     runOnUiThread(MainActivity.this::recreate);
                 }
-            }, "OrderRestroNative");
+            }, "YatriDeskNative");
         }
     }
 

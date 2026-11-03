@@ -1,6 +1,6 @@
 # Review demo server
 
-A small, throwaway OrderRestro for App Store and Play reviewers: sample data, a manager login, a rider login, reset with `reset.sh`. It holds nothing real.
+A small, throwaway YatriDesk for App Store and Play reviewers: sample data, a manager login, a rider login, reset with `reset.sh`. It holds nothing real.
 
 ## What is here
 
@@ -11,17 +11,17 @@ A small, throwaway OrderRestro for App Store and Play reviewers: sample data, a 
 
 ## Where it runs now
 
-On `rakbotrapo-vps2` in `~/orderrestro-demo` (containers `orderrestro-demo-db`, `-backend`, `-web`, 1.1 GB memory cap, web on 127.0.0.1:19951). The nightly reset is NOT scheduled yet: run `./reset.sh` by hand, or add the cron line shown in the script header. It is also not reachable from the internet yet: it needs a Cloudflare Tunnel public hostname pointing `orderrestro-demo.nodedr.com` at `http://localhost:19951`. The reviewer credentials are in `~/orderrestro-signing/demo/credentials.txt` on the maintainer's machine.
+On `rakbotrapo-vps2` in `~/yatrideesk-demo` (containers `yatrideesk-demo-db`, `-backend`, `-web`, 1.1 GB memory cap, web on 127.0.0.1:19951). The nightly reset is NOT scheduled yet: run `./reset.sh` by hand, or add the cron line shown in the script header. It is also not reachable from the internet yet: it needs a Cloudflare Tunnel public hostname pointing `github.com/jay-555/YatriDesk` at `http://localhost:19951`. The reviewer credentials are in `~/yatrideesk-signing/demo/credentials.txt` on the maintainer's machine.
 
 ## Deploy
 
 ```bash
-mkdir -p ~/orderrestro-demo && cd ~/orderrestro-demo
+mkdir -p ~/yatrideesk-demo && cd ~/yatrideesk-demo
 # copy docker-compose.yml, reset.sh and demo-seed.sql here
 cat > .env <<ENV            # chmod 600
 DEMO_DB_PASSWORD=$(openssl rand -hex 16)
 DEMO_JWT_SECRET=$(openssl rand -hex 32)
-DEMO_ORIGIN=https://orderrestro-demo.nodedr.com
+DEMO_ORIGIN=https://github.com/jay-555/YatriDesk
 APP_VERSION=1.15.1
 ENV
 chmod 600 .env
@@ -29,7 +29,7 @@ chmod 600 .env
 ./reset.sh                           # loads the sample data
 ```
 
-Point a public hostname (for example `orderrestro-demo.nodedr.com`) at `http://127.0.0.1:19951` through a Cloudflare Tunnel public hostname. Keep it https so the app can reach it from anywhere.
+Point a public hostname (for example `github.com/jay-555/YatriDesk`) at `http://127.0.0.1:19951` through a Cloudflare Tunnel public hostname. Keep it https so the app can reach it from anywhere.
 
 ## Reviewer login
 

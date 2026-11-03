@@ -1,18 +1,18 @@
 {
-  "name": "nodedr-orderrestro",
+  "name": "yatrideesk",
   "private": true,
   "version": "0.1.0",
-  "description": "Nodedr OrderRestro — offline-first Restaurant Management System",
-  "author": "Raktim Ranjit <mail@raktimranjit.com> (https://github.com/Raktim94)",
+  "description": "YatriDesk — offline-first Restaurant Management System",
+  "author": "jay-555 (https://github.com/jay-555)",
   "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Raktim94/nodedr-restaurant-pos.git"
+    "url": "https://github.com/jay-555/YatriDesk.git"
   },
   "bugs": {
-    "url": "https://github.com/Raktim94/nodedr-restaurant-pos/issues"
+    "url": "https://github.com/jay-555/YatriDesk/issues"
   },
-  "homepage": "https://orderrestro.nodedr.com/",
+  "homepage": "https://github.com/jay-555/YatriDesk",
   "keywords": [
     "restaurant-management",
     "restaurant-pos",

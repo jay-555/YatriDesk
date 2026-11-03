@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-click installer for Nodedr OrderRestro (nodedr-restaurant-pos).
+# One-click installer for YatriDesk (yatrideesk).
 #
 # Run this from the repo root after cloning:
 #   ./install.sh
@@ -11,7 +11,7 @@
 # an existing .env or destroys existing data.
 #
 # Pass --demo to also load seed data (a sample restaurant, menu, and a
-# owner@demo.local login) for trying the app out. Without it, sign up your
+# owner@demo.local login) for trying the app out. Without it, sign up you
 # own restaurant at /signup — no demo data is created.
 
 set -euo pipefail
@@ -77,7 +77,7 @@ EOF
 fi
 
 # --- 3. Build the images and start the stack --------------------------------
-echo "Building Nodedr OrderRestro images and starting the stack (this can take a few minutes on first run)..."
+echo "Building YatriDesk images and starting the stack (this can take a few minutes on first run)..."
 docker compose up -d --build
 
 # --- 4. Wait for the app to report healthy ----------------------------------
@@ -107,12 +107,12 @@ fi
 # re-install without duplicating or clobbering anything.
 if [ "$load_demo" = true ]; then
   echo "Loading demo data (restaurant, menu, staff logins)..."
-  docker exec nodedr-restaurant-backend npx ts-node prisma/seed.ts
+  docker exec yatrideesk-backend npx ts-node prisma/seed.ts
 fi
 
 # --- 6. Done -----------------------------------------------------------------
 echo ""
-echo "Nodedr OrderRestro is up and running."
+echo "YatriDesk is up and running."
 echo "Open http://localhost:${HOST_PORT}"
 if [ "$load_demo" = true ]; then
   echo "Sign in with the demo account: owner@demo.local / Password123!"

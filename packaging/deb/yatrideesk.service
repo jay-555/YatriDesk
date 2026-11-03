@@ -1,0 +1,16 @@
+[Unit]
+Description=YatriDesk (Docker Compose)
+Documentation=https://github.com/jay-555/YatriDesk
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=900
+ExecStart=/usr/bin/docker compose --project-name yatrideesk --env-file /etc/yatrideesk/yatrideesk.env -f /usr/lib/yatrideesk/docker-compose.yml up -d --remove-orphans
+ExecStop=/usr/bin/docker compose --project-name yatrideesk --env-file /etc/yatrideesk/yatrideesk.env -f /usr/lib/yatrideesk/docker-compose.yml down
+
+[Install]
+WantedBy=multi-user.target

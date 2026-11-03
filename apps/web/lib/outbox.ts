@@ -12,7 +12,7 @@ export interface OutboxItem {
   at: number;
 }
 
-const STORE = "orderrestro.outbox.v1";
+const STORE = "yatrideesk.outbox.v1";
 const listeners = new Set<() => void>();
 
 function read(): OutboxItem[] {
