@@ -25,6 +25,9 @@ function setup(
       ),
       update: jest.fn(async () => ({})),
     },
+    restaurant: {
+      findUnique: jest.fn(async () => ({ status: 'ACTIVE' })),
+    },
   };
   const reflector = { getAllAndOverride: jest.fn(() => scopes) };
   const guard = new IntegrationApiKeyGuard(
