@@ -368,9 +368,8 @@ export class OrdersService {
       await this.hours.assertOpen(branchId, scheduledFor ?? new Date());
     }
 
-    const orderNumber = await this.nextOrderNumber(branchId);
-
     const order = await this.prisma.$transaction(async (tx) => {
+      const orderNumber = await this.nextOrderNumber(branchId, tx);
       const created = await tx.order.create({
         data: {
           branchId,
@@ -2218,10 +2217,16 @@ export class OrdersService {
   // Next number for today: highest existing sequence + 1, not a row count. A
   // count collides with an existing number as soon as any earlier order of the
   // day has been deleted (orders.delete), and that surfaced as a 409 on the
-  // unique (branchId, orderNumber) index.
-  private async nextOrderNumber(branchId: string): Promise<string> {
+  // unique (branchId, orderNumber) index. The advisory lock keeps concurrent
+  // creates on the same branch from reading that max at the same time.
+  private async nextOrderNumber(
+    branchId: string,
+    tx: Prisma.TransactionClient,
+  ): Promise<string> {
     const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const latest = await this.prisma.order.findFirst({
+    const lockKey = `order-number:${branchId}:${datePart}`;
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`;
+    const latest = await tx.order.findFirst({
       where: { branchId, orderNumber: { startsWith: `${datePart}-` } },
       orderBy: { orderNumber: 'desc' },
       select: { orderNumber: true },

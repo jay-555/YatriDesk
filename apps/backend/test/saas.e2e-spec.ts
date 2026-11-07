@@ -20,8 +20,11 @@ const created = (status: number) => status === 200 || status === 201;
 
 function jar(res: { headers: Record<string, unknown> }) {
   const raw = res.headers['set-cookie'];
-  const list = Array.isArray(raw) ? raw : raw ? [String(raw)] : [];
-  return list.map((c) => String(c).split(';')[0]).join('; ');
+  const list = Array.isArray(raw) ? raw : typeof raw === 'string' ? [raw] : [];
+  return list
+    .filter((c): c is string => typeof c === 'string')
+    .map((c) => c.split(';')[0])
+    .join('; ');
 }
 
 run('India SaaS pilot gate (e2e)', () => {
@@ -148,12 +151,20 @@ run('India SaaS pilot gate (e2e)', () => {
         .post(`/api/v1/orders?branchId=${a.branchId}`)
         .set('Cookie', cookieA)
         .send({ type: 'TAKEAWAY', items: [{ menuItemId: item.id, quantity: 1, modifierIds: [] }] });
-      expect(created(order.status)).toBe(true);
+      if (!created(order.status)) {
+        throw new Error(
+          `order create failed ${order.status}: ${JSON.stringify(order.body)}`,
+        );
+      }
       const paid = await request(app.getHttpServer())
         .post(`/api/v1/orders/${order.body.id}/checkout?branchId=${a.branchId}`)
         .set('Cookie', cookieA)
         .send({ payments: [{ method: 'CASH', amount: 100 }], requestId: randomUUID() });
-      expect(created(paid.status)).toBe(true);
+      if (!created(paid.status)) {
+        throw new Error(
+          `checkout failed ${paid.status}: ${JSON.stringify(paid.body)}`,
+        );
+      }
       return paid.body.invoiceNumber as string;
     };
 
