@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ModuleSwitchList, type ModuleSwitchRow } from "@/components/platform/module-switch-list";
 import { Button } from "@/components/ui/button";
 import { ApiError, api } from "@/lib/api";
 
@@ -18,12 +19,19 @@ export default function PlatformRestaurantPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [row, setRow] = useState<RestaurantDetail | null>(null);
+  const [modules, setModules] = useState<ModuleSwitchRow[]>([]);
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = () =>
-    api
-      .get<RestaurantDetail>(`/platform/restaurants/${id}`)
-      .then(setRow)
+    Promise.all([
+      api.get<RestaurantDetail>(`/platform/restaurants/${id}`),
+      api.get<ModuleSwitchRow[]>(`/platform/restaurants/${id}/modules`),
+    ])
+      .then(([detail, switches]) => {
+        setRow(detail);
+        setModules(switches);
+      })
       .catch((err) => {
         if (err instanceof ApiError && (err.status === 401 || err.status === 403)) router.replace("/platform/login");
         else setError(err instanceof ApiError ? err.message : "Could not load this restaurant");
@@ -43,6 +51,19 @@ export default function PlatformRestaurantPage() {
     }
   };
 
+  const onToggle = async (key: string, enabled: boolean) => {
+    setError(null);
+    setPendingKey(key);
+    try {
+      await api.put(`/platform/restaurants/${id}/modules`, { key, enabled });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not update the module");
+    } finally {
+      setPendingKey(null);
+    }
+  };
+
   if (!row) {
     return <main className="p-10 text-sm text-muted-foreground">{error ?? "Loading…"}</main>;
   }
@@ -57,6 +78,10 @@ export default function PlatformRestaurantPage() {
         <Button variant="outline" onClick={() => setStatus("SUSPENDED")} disabled={row.status === "SUSPENDED"}>Suspend</Button>
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
+      <div className="flex flex-col gap-3">
+        <h2 className="text-lg font-medium">Modules</h2>
+        <ModuleSwitchList rows={modules} pendingKey={pendingKey} onToggle={(key, enabled) => void onToggle(key, enabled)} />
+      </div>
       <ul className="flex flex-col gap-2">
         {row.users.map((user) => (
           <li key={user.id} className="rounded-lg border border-border px-4 py-2 text-sm">

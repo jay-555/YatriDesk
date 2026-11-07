@@ -16,6 +16,7 @@ import {
   useProfitLoss,
 } from "@/hooks/use-accounting";
 import { useBranch } from "@/hooks/use-branch";
+import { useFeatures } from "@/hooks/use-features";
 import { ApiError } from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -293,6 +294,8 @@ function BranchesTab() {
 
 export default function AccountingPage() {
   const { branchId } = useBranch();
+  const bankOn = useFeatures().data?.flags.bank !== false;
+  const tabs = TABS.filter((t) => bankOn || t !== "bank");
   const [tab, setTab] = useState<Tab>("expenses");
   return (
     <div className="flex flex-col gap-6">
@@ -301,7 +304,7 @@ export default function AccountingPage() {
         <p className="text-sm text-muted-foreground">Expenses, cash close, profit &amp; loss, balance sheet, budgets, bank reconciliation, tax and branches</p>
       </div>
       <div className="flex flex-wrap gap-2">
-        {TABS.map((t) => (
+        {tabs.map((t) => (
           <button
             key={t}
             type="button"
@@ -320,7 +323,7 @@ export default function AccountingPage() {
       {tab === "profit & loss" && <ProfitLossTab branchId={branchId} />}
       {tab === "balance sheet" && <BalanceSheetTab branchId={branchId} />}
       {tab === "budgets" && <BudgetsTab branchId={branchId} />}
-      {tab === "bank" && <BankTab branchId={branchId} />}
+      {bankOn && tab === "bank" && <BankTab branchId={branchId} />}
       {tab === "gst" && <GstTab branchId={branchId} />}
       {tab === "branches" && <BranchesTab />}
     </div>

@@ -39,6 +39,7 @@
   "order.couldNotPlace": "Could not place order — please ask a staff member for help.",
   "order.pricesIncludeTax": "Prices include tax. A staff member will confirm your order shortly.",
   "order.closed": "This outlet is closed right now. Please try again later.",
+  "order.unavailable": "Online ordering is unavailable.",
   "kiosk.welcome.title": "Order here",
   "kiosk.welcome.touch": "Touch the screen to start",
   "kiosk.service.title": "Where will you eat?",

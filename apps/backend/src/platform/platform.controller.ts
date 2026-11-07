@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, Post, Req, Res, UseGuards, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Req, Res, UseGuards, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { SAAS_FEATURE_KEYS } from '../common/saas-mode';
+import { FeaturesService } from '../features/features.service';
 import { PlatformAuthGuard } from './platform.guard';
 import { PlatformService } from './platform.service';
 import type { PlatformPrincipal } from './platform.strategy';
@@ -33,13 +35,20 @@ const onboardSchema = z.object({
 const statusSchema = z.object({
   status: z.enum(['TRIAL', 'ACTIVE', 'PAST_DUE', 'SUSPENDED']),
 });
+const moduleSchema = z.object({
+  key: z.enum(SAAS_FEATURE_KEYS),
+  enabled: z.boolean(),
+});
 
 type PlatformRequest = Request & { user: PlatformPrincipal };
 
 @ApiTags('platform')
 @Controller('v1/platform')
 export class PlatformController {
-  constructor(private readonly platform: PlatformService) {}
+  constructor(
+    private readonly platform: PlatformService,
+    private readonly features: FeaturesService,
+  ) {}
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('login')
@@ -76,6 +85,32 @@ export class PlatformController {
     const result = await this.platform.enableTotp(req.user.id, body.code);
     res.cookie(PLATFORM_COOKIE, result.token, { ...cookieBase(), maxAge: 12 * 60 * 60 * 1000 });
     return { ok: true };
+  }
+
+  @UseGuards(PlatformAuthGuard)
+  @Get('modules')
+  modules() {
+    return this.features.globalSwitches();
+  }
+
+  @UseGuards(PlatformAuthGuard)
+  @Put('modules')
+  @UsePipes(new ZodValidationPipe(moduleSchema))
+  setModule(@Body() body: z.infer<typeof moduleSchema>) {
+    return this.features.setGlobal(body.key, body.enabled);
+  }
+
+  @UseGuards(PlatformAuthGuard)
+  @Get('restaurants/:id/modules')
+  restaurantModules(@Param('id') id: string) {
+    return this.features.restaurantSwitches(id);
+  }
+
+  @UseGuards(PlatformAuthGuard)
+  @Put('restaurants/:id/modules')
+  @UsePipes(new ZodValidationPipe(moduleSchema))
+  setRestaurantModule(@Param('id') id: string, @Body() body: z.infer<typeof moduleSchema>) {
+    return this.features.setRestaurant(id, body.key, body.enabled);
   }
 
   @UseGuards(PlatformAuthGuard)

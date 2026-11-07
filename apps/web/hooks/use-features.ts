@@ -12,6 +12,8 @@ export function useFeatures() {
   return useQuery({
     queryKey: ["features"],
     queryFn: () => api.get<FeatureFlags>("/features"),
-    staleTime: 60_000,
+    staleTime: 0,
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
   });
 }

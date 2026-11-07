@@ -51,7 +51,8 @@ export default function SettingsPage() {
   const { data, isLoading } = useSettings(branchId);
   const features = useFeatures();
   const saas = features.data?.saasMode === true;
-  const kioskOn = !saas || features.data?.flags.kiosk === true;
+  const kioskOn = features.data?.flags.kiosk !== false;
+  const onlineOn = features.data?.flags.onlineOrdering !== false;
 
   return (
     <div className="flex flex-col gap-6">
@@ -76,7 +77,7 @@ export default function SettingsPage() {
         />
       )}
 
-      {data && <OnlineOrdersCard key={data.branch.id} branchId={branchId} branch={data.branch} />}
+      {onlineOn && data && <OnlineOrdersCard key={data.branch.id} branchId={branchId} branch={data.branch} />}
 
       {kioskOn && data && <KioskCard key={`kiosk-${data.branch.id}`} branchId={branchId} branch={data.branch} />}
 
@@ -235,6 +236,9 @@ function GeneralSettingsForm({
   const removeClosure = useRemoveBranchClosure(branchId);
 
   const preset = TAX_REGIME_PRESETS[taxRegime];
+  const moduleFlags = useFeatures().data?.flags;
+  const referralsOn = moduleFlags?.referrals !== false;
+  const onlineOrderingOn = moduleFlags?.onlineOrdering !== false;
 
   const updateRestaurant = useUpdateRestaurantSettings(branchId);
   const updateBranch = useUpdateBranchSettings(branchId);
@@ -553,7 +557,7 @@ function GeneralSettingsForm({
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
+          {referralsOn && <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h3 className="text-sm font-medium text-foreground">Referral rewards</h3>
@@ -608,8 +612,9 @@ function GeneralSettingsForm({
                 onChange={(e) => setReferralMinPurchase(e.target.value)}
               />
             </div>
-          </div>
+          </div>}
 
+          {onlineOrderingOn && (<>
           <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
             <div>
               <h3 className="text-sm font-medium text-foreground">Website food prices</h3>
@@ -684,6 +689,7 @@ function GeneralSettingsForm({
               and table QR orders are not affected.
             </p>
           </div>
+          </>)}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">

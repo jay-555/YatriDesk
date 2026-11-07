@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { FeaturesModule } from '../features/features.module';
 import { PlatformController } from './platform.controller';
 import { PlatformAuthGuard } from './platform.guard';
 import { PlatformService } from './platform.service';
@@ -9,6 +10,7 @@ import { PlatformJwtStrategy } from './platform.strategy';
 
 @Module({
   imports: [
+    FeaturesModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
