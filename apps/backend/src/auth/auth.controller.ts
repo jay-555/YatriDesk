@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
+  changePasswordSchema,
   loginSchema,
   pinLoginSchema,
   registerSchema,
@@ -112,6 +113,19 @@ export class AuthController {
       secure: isCookieSecure(),
     });
     return { ok: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('change-password')
+  @UsePipes(new ZodValidationPipe(changePasswordSchema))
+  async changePassword(
+    @CurrentUser() user: SessionUser,
+    @Body() body: unknown,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { token, user: session } = await this.authService.changePassword(user.id, body as never);
+    this.setSessionCookie(res, token);
+    return { user: session };
   }
 
   @Post('logout')

@@ -40,6 +40,7 @@ function build(opts: { zones?: boolean } = {}) {
 
   const tx = {
     order: {
+      findFirst: jest.fn(async () => null),
       create: jest.fn(async ({ data }: any) => {
         const row = {
           id: `o${orders.length + 1}`,
@@ -159,6 +160,7 @@ function build(opts: { zones?: boolean } = {}) {
     { emitForBranch: jest.fn() } as never,
     {} as never,
     {} as never,
+    { assertOpen: jest.fn().mockResolvedValue(undefined) } as never,
   );
   const service = new IntegrationsService(
     prisma,

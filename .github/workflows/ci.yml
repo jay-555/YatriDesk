@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [master, saas/mvp]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @yatrideesk/types build
+      - run: pnpm --filter @yatrideesk/backend exec prisma generate
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm --filter @yatrideesk/backend exec jest --passWithNoTests
+      - run: pnpm --filter web test
+      - run: pnpm build
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: yatrideesk
+          POSTGRES_PASSWORD: yatrideesk
+          POSTGRES_DB: yatrideesk
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U yatrideesk"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://yatrideesk:yatrideesk@localhost:5432/yatrideesk
+      JWT_SECRET: ci-jwt-secret-not-for-production
+      SAAS_MODE: "true"
+      SAAS_E2E: "1"
+      PLATFORM_ADMIN_EMAIL: platform@example.com
+      PLATFORM_ADMIN_PASSWORD: Platform123!
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.10.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @yatrideesk/types build
+      - run: pnpm --filter @yatrideesk/backend exec prisma generate
+      - run: pnpm --filter @yatrideesk/backend exec prisma migrate deploy
+      - run: pnpm --filter @yatrideesk/backend exec jest --config ./test/jest-e2e.json --runInBand --testPathPatterns saas.e2e-spec

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
@@ -48,6 +48,12 @@ import { IntegrationsModule } from './integrations/integrations.module';
 import { McpModule } from './mcp/mcp.module';
 import { SystemModule } from './system/system.module';
 import { VerifactuModule } from './modules/verifactu/verifactu.module';
+import { SaasCommonModule } from './common/saas.module';
+import { PlatformModule } from './platform/platform.module';
+import { BillingModule } from './billing/billing.module';
+import { FeaturesModule } from './features/features.module';
+import { isSaasMode } from './common/saas-mode';
+import { RequestLogInterceptor } from './common/interceptors/request-log.interceptor';
 
 @Module({
   imports: [
@@ -55,6 +61,10 @@ import { VerifactuModule } from './modules/verifactu/verifactu.module';
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
     PrismaModule,
+    SaasCommonModule,
+    PlatformModule,
+    BillingModule,
+    FeaturesModule,
     RealtimeModule,
     AuthModule,
     MenuModule,
@@ -94,14 +104,14 @@ import { VerifactuModule } from './modules/verifactu/verifactu.module';
     StandaloneModule,
     BackupModule,
     IntegrationsModule,
-    McpModule,
-    SystemModule,
+    ...(isSaasMode() ? [] : [McpModule, SystemModule]),
   ],
   controllers: [AppController],
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_FILTER, useClass: PrismaExceptionFilter },
+    { provide: APP_INTERCEPTOR, useClass: RequestLogInterceptor },
   ],
 })
 export class AppModule {}

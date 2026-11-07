@@ -133,9 +133,15 @@ export class SettingsService {
       dto.taxRegime && dto.taxMode === undefined
         ? { ...dto, taxMode: TAX_REGIME_PRESETS[dto.taxRegime].defaultMode }
         : dto;
+    const payload = { ...data } as Record<string, unknown>;
+    if (payload.fssaiNumber === '') payload.fssaiNumber = null;
+    if (payload.fssaiExpiresOn === '') payload.fssaiExpiresOn = null;
+    else if (typeof payload.fssaiExpiresOn === 'string') {
+      payload.fssaiExpiresOn = new Date(`${payload.fssaiExpiresOn}T00:00:00.000Z`);
+    }
     const updated = await this.prisma.branch.update({
       where: { id: branchId },
-      data,
+      data: payload as never,
     });
     await this.audit.record({
       userId,

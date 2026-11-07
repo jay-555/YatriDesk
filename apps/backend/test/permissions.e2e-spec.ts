@@ -169,7 +169,7 @@ run('Role permissions (e2e)', () => {
     const floors = (
       await agents.WAITER.get(`/api/v1/tables/floors${q}`).expect(200)
     ).body as { id: string }[];
-    const tableId = (
+    const createdTable = (
       await agents.OWNER.post(`/api/v1/tables${q}`)
         .send({
           floorId: floors[0].id,
@@ -177,7 +177,8 @@ run('Role permissions (e2e)', () => {
           capacity: 2,
         })
         .expect(201)
-    ).body.id as string;
+    ).body as { id: string };
+    const tableId = createdTable.id;
     expect(
       await status('WAITER', 'patch', `/tables/${tableId}/status${q}`, {
         status: 'CLEANING',

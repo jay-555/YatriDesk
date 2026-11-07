@@ -31,8 +31,15 @@ export const sessionUserSchema = z.object({
   roleId: z.string(),
   roleName: z.string(),
   permissions: z.array(z.string()),
+  mustChangePassword: z.boolean().optional(),
 });
 export type SessionUser = z.infer<typeof sessionUserSchema>;
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8).max(200),
+});
+export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;
 
 export const twoFactorCodeSchema = z.object({ code: z.string().trim().min(6).max(20) });
 export const twoFactorDisableSchema = z.object({

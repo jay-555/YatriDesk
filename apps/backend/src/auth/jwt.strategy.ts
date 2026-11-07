@@ -11,6 +11,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 interface JwtPayload {
   sub: string;
+  kind?: string;
 }
 
 const cookieExtractor = (req: {
@@ -33,13 +34,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<SessionUser> {
+    if (payload.kind === 'platform') {
+      throw new UnauthorizedException('Platform sessions cannot call restaurant routes');
+    }
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      include: permissionInclude,
+      include: { ...permissionInclude, restaurant: { select: { status: true } } },
     });
 
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Session no longer valid');
+    }
+    if (user.restaurant.status === 'SUSPENDED') {
+      throw new UnauthorizedException('This restaurant is suspended');
     }
 
     return {
@@ -49,6 +56,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       roleId: user.roleId,
       roleName: user.role.name,
       permissions: effectivePermissions(user),
+      mustChangePassword: user.mustChangePassword,
     };
   }
 }

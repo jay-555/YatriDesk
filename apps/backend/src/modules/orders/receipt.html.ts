@@ -70,8 +70,12 @@ interface ReceiptOrder {
     unitPriceSnapshot: number;
     lineTotal: number;
     taxRateSnapshot: number;
+    hsnCode?: string | null;
     modifiers: { nameSnapshot: string; priceAdjSnapshot: number }[];
   }[];
+  invoiceNumber?: string | null;
+  customerGstin?: string | null;
+  customerLegalName?: string | null;
   payments: {
     method: string;
     amount: number;
@@ -96,6 +100,8 @@ export function buildReceiptHtml({
     taxMode: TaxMode;
     taxLabel: string | null;
     taxId: string | null;
+    fssaiNumber?: string | null;
+    gstScheme?: 'REGULAR' | 'COMPOSITION' | null;
   };
   currency: string;
   order: ReceiptOrder;
@@ -111,6 +117,8 @@ export function buildReceiptHtml({
     branch.taxId ||
     (branch.taxRegime === 'INDIA_GST' ? branch.gstNumber : null);
   const taxIdLabel = resolveTaxIdLabel(branch.taxRegime);
+  const india = branch.taxRegime === 'INDIA_GST';
+  const billOfSupply = india && branch.gstScheme === 'COMPOSITION';
 
   const itemRows = order.items
     .map((item) => {
@@ -120,7 +128,7 @@ export function buildReceiptHtml({
       return `
         <tr>
           <td>${esc(item.nameSnapshot)}${modifierLines}${
-            Number(item.taxRateSnapshot) > 0
+            Number(item.taxRateSnapshot) > 0 && !billOfSupply
               ? `<div class="sub">${esc(taxLabel)} @ ${item.taxRateSnapshot}%</div>`
               : ''
           }</td>
@@ -147,7 +155,7 @@ export function buildReceiptHtml({
         `- ${money(order.discountAmount)}`,
       ]);
     }
-    if (order.taxAmount > 0) {
+    if (order.taxAmount > 0 && !billOfSupply) {
       totalRows.push([taxLabel, money(order.taxAmount)]);
     }
   } else {
@@ -160,7 +168,7 @@ export function buildReceiptHtml({
         `- ${money(order.discountAmount)}`,
       ]);
     }
-    if (order.taxAmount > 0) {
+    if (order.taxAmount > 0 && !billOfSupply) {
       // Prices are tax-inclusive (see ARCHITECTURE.md) — this is a breakup
       // of tax already inside the total above, not an additional charge.
       if (TAX_REGIME_PRESETS[branch.taxRegime].splitCgstSgst) {
@@ -203,6 +211,26 @@ export function buildReceiptHtml({
         </table>`
       : '';
 
+  const hsnGroups = new Map<string, { qty: number; value: number }>();
+  if (india) {
+    for (const item of order.items) {
+      const hsn = item.hsnCode || '996331';
+      const row = hsnGroups.get(hsn) ?? { qty: 0, value: 0 };
+      row.qty += item.quantity;
+      row.value += item.lineTotal;
+      hsnGroups.set(hsn, row);
+    }
+  }
+  const hsnTable =
+    hsnGroups.size > 0
+      ? `<hr class="rule"><p class="muted">HSN / SAC</p><table><tbody>${[...hsnGroups.entries()]
+          .map(
+            ([hsn, row]) =>
+              `<tr><td>${esc(hsn)}</td><td class="num">${row.qty}</td><td class="num">${money(row.value)}</td></tr>`,
+          )
+          .join('')}</tbody></table>`
+      : '';
+
   return `<!doctype html>
 <html>
 <head>
@@ -241,15 +269,19 @@ export function buildReceiptHtml({
   </script>
   <div class="receipt">
     <h1>${esc(restaurantName)}</h1>
+    ${billOfSupply ? '<p class="center"><strong>BILL OF SUPPLY</strong></p>' : order.invoiceNumber ? '<p class="center"><strong>TAX INVOICE</strong></p>' : ''}
     <p class="center muted">
       ${esc(branch.name)}${branch.address ? `<br>${esc(branch.address)}` : ''}
       ${branch.phone ? `<br>Ph: ${esc(branch.phone)}` : ''}
       ${taxIdValue ? `<br>${esc(taxIdLabel)}: ${esc(taxIdValue)}` : ''}
+      ${branch.fssaiNumber ? `<br>FSSAI: ${esc(branch.fssaiNumber)}` : ''}
     </p>
     <hr class="rule">
     <p class="muted">
       ${esc(dateStr)}<br>
       Order: #${esc(order.orderNumber)} · ${esc(order.type.replace('_', ' '))}
+      ${order.invoiceNumber ? `<br>Invoice: ${esc(order.invoiceNumber)}` : ''}
+      ${order.customerGstin ? `<br>Buyer GSTIN: ${esc(order.customerGstin)}${order.customerLegalName ? ` · ${esc(order.customerLegalName)}` : ''}` : ''}
       ${order.table ? `<br>Table: ${esc(order.table.label)}` : ''}
       ${order.customer ? `<br>Guest: ${esc(order.customer.name)}${order.customer.phone ? ` · ${esc(order.customer.phone)}` : ''}` : ''}
     </p>
@@ -260,6 +292,7 @@ export function buildReceiptHtml({
       </thead>
       <tbody>${itemRows}</tbody>
     </table>
+    ${hsnTable}
     <hr class="rule">
     <table class="totals">
       ${totalRows.map(([l, v]) => `<tr><td>${esc(l)}</td><td class="num">${esc(v)}</td></tr>`).join('')}

@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Res,
+  UseGuards,
   UsePipes,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -18,6 +19,7 @@ import {
   type SessionUser,
 } from '@yatrideesk/types';
 import { Auth } from '../common/decorators/auth.decorator';
+import { NotInSaasGuard } from '../common/guards/not-in-saas.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { BackupService } from './backup.service';
@@ -32,6 +34,7 @@ import { BackupService } from './backup.service';
 // `BackupService.restore()` itself — see that method's comment for why.
 @ApiTags('backups')
 @Controller('v1/backups')
+@UseGuards(NotInSaasGuard)
 export class BackupController {
   constructor(private readonly backupService: BackupService) {}
 

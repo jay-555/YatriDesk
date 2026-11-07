@@ -40,6 +40,26 @@ enum TaxMode {
   EXCLUSIVE
 }
 
+enum RestaurantStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+}
+
+enum GstScheme {
+  REGULAR
+  COMPOSITION
+}
+
+enum BillingState {
+  NONE
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  HALTED
+}
+
 model Restaurant {
   departments Department[]
   id        String  @id @default(cuid())
@@ -86,8 +106,24 @@ model Restaurant {
   maxManualDiscountPercent Decimal @default(100) @db.Decimal(5, 2)
   requireDiscountReason    Boolean @default(false)
 
+  phone       String?
+  email       String?
+  address     String?
+  city        String?
+  state       String?
+  pincode     String?
+  pan         String?
+  status      RestaurantStatus @default(ACTIVE)
+  plan        String           @default("starter")
+  maxBranches Int              @default(1)
+  maxUsers    Int              @default(25)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  billingAccount BillingAccount?
+  featureFlags   FeatureFlag[]
+  saasInvoices   SaasInvoice[]
 
   branches               Branch[]
   roles                  Role[]
@@ -125,6 +161,11 @@ model Branch {
   address   String?
   phone     String?
   gstNumber String?
+  fssaiNumber       String?
+  fssaiExpiresOn    DateTime?
+  invoicePrefix     String?
+  gstScheme         GstScheme @default(REGULAR)
+  temporarilyClosed Boolean   @default(false)
 
   // Multi-region tax config (2026-09-27). country is an ISO 3166-1 alpha-2
   // code driving default currency/locale suggestions in the UI; it does not
@@ -172,6 +213,9 @@ model Branch {
   updatedAt DateTime @updatedAt
 
   floors          Floor[]
+  hours           BranchHours[]
+  closures        BranchClosure[]
+  invoiceSequences InvoiceSequence[]
   users           UserBranch[]
   menuItems       MenuItem[]
   categories      MenuCategory[]
@@ -311,6 +355,7 @@ model User {
   twoFactorEnabled        Boolean  @default(false)
   twoFactorRecoveryHashes String[] @default([]) // bcrypt hashes of unused one-time recovery codes
   twoFactorLastStep       Int? // last accepted TOTP step: a code works once
+  mustChangePassword      Boolean @default(false)
 
   // Delivery rider app: on duty, and the last position the rider's phone reported.
   riderOnline     Boolean   @default(false)
@@ -1132,6 +1177,7 @@ model MenuItem {
 
   price          Decimal  @db.Decimal(12, 2) // tax-inclusive selling price (see nodedr-pos GST lesson in ARCHITECTURE.md)
   taxRatePercent Decimal  @default(0) @db.Decimal(5, 2)
+  hsnCode        String?
   costPrice      Decimal? @db.Decimal(12, 2)
 
   prepTimeMinutes Int?
@@ -1231,9 +1277,11 @@ model Customer {
   branchId String
   branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
-  name        String?
-  phone       String?
-  email       String?
+  name         String?
+  phone        String?
+  email        String?
+  gstin        String?
+  businessName String?
   address     String?
   birthday    DateTime?
   anniversary DateTime?
@@ -1400,7 +1448,11 @@ model Order {
   branchId String
   branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
 
-  orderNumber String // human-readable, sequential per branch per day
+  orderNumber       String // human-readable, sequential per branch per day
+  invoiceNumber     String?
+  invoicedAt        DateTime?
+  customerGstin     String?
+  customerLegalName String?
   type        OrderType        @default(DINE_IN)
   status      OrderStatus      @default(OPEN)
   channel     OrderChannel     @default(STAFF)
@@ -1505,6 +1557,7 @@ model Order {
   refunds             Refund[]
 
   @@unique([branchId, orderNumber])
+  @@unique([branchId, invoiceNumber])
   @@unique([branchId, clientRequestId])
   @@unique([branchId, externalSource, externalOrderId])
   @@index([branchId, status])
@@ -2566,4 +2619,109 @@ model DeviceToken {
 
   @@index([userId])
   @@map("device_tokens")
+}
+
+model BranchHours {
+  id        String @id @default(cuid())
+  branchId  String
+  branch    Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  dayOfWeek Int
+  openTime  String
+  closeTime String
+
+  @@index([branchId, dayOfWeek])
+  @@map("branch_hours")
+}
+
+model BranchClosure {
+  id       String   @id @default(cuid())
+  branchId String
+  branch   Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  date     DateTime @db.Date
+  reason   String?
+
+  @@unique([branchId, date])
+  @@map("branch_closures")
+}
+
+model InvoiceSequence {
+  id         String @id @default(cuid())
+  branchId   String
+  branch     Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  fiscalYear String
+  lastNumber Int    @default(0)
+
+  @@unique([branchId, fiscalYear])
+  @@map("invoice_sequences")
+}
+
+model PlatformAdmin {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
+  totpSecret      String?
+  totpEnabled     Boolean  @default(false)
+  recoveryHashes  String[] @default([])
+  totpLastStep    Int?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@map("platform_admins")
+}
+
+model PlatformAuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("platform_audit_logs")
+}
+
+model BillingAccount {
+  restaurantId           String       @id
+  restaurant             Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  razorpayCustomerId     String?
+  razorpaySubscriptionId String?
+  status                 BillingState @default(NONE)
+  plan                   String       @default("starter")
+  updatedAt              DateTime     @updatedAt
+
+  @@map("billing_accounts")
+}
+
+model SaasInvoice {
+  id                String     @id @default(cuid())
+  restaurantId      String
+  restaurant        Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  number            String     @unique
+  taxableAmount     Decimal    @db.Decimal(12, 2)
+  gstAmount         Decimal    @db.Decimal(12, 2)
+  total             Decimal    @db.Decimal(12, 2)
+  razorpayPaymentId String?
+  issuedAt          DateTime   @default(now())
+
+  @@index([restaurantId, issuedAt])
+  @@map("saas_invoices")
+}
+
+model FeatureFlag {
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  key          String
+  enabled      Boolean    @default(false)
+
+  @@id([restaurantId, key])
+  @@map("feature_flags")
+}
+
+model SaasInvoiceSequence {
+  id         String @id @default("saas")
+  lastNumber Int    @default(0)
+
+  @@map("saas_invoice_sequences")
 }

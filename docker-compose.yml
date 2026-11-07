@@ -54,6 +54,14 @@ services:
       VERIFACTU_PRODUCER_COUNTRY: "${VERIFACTU_PRODUCER_COUNTRY:-}"
       VERIFACTU_SYSTEM_ID: "${VERIFACTU_SYSTEM_ID:-}"
       SYNC_API_KEY: "${SYNC_API_KEY:-}"
+      SAAS_MODE: "${SAAS_MODE:-}"
+      PLATFORM_ADMIN_EMAIL: "${PLATFORM_ADMIN_EMAIL:-}"
+      PLATFORM_ADMIN_PASSWORD: "${PLATFORM_ADMIN_PASSWORD:-}"
+      RAZORPAY_KEY_ID: "${RAZORPAY_KEY_ID:-}"
+      RAZORPAY_KEY_SECRET: "${RAZORPAY_KEY_SECRET:-}"
+      RAZORPAY_PLAN_ID: "${RAZORPAY_PLAN_ID:-}"
+      RAZORPAY_WEBHOOK_SECRET: "${RAZORPAY_WEBHOOK_SECRET:-}"
+      ERROR_REPORTER_URL: "${ERROR_REPORTER_URL:-}"
       # In-app updates (Settings > Updates): the backend asks the `updater`
       # container below to pull the latest published images. Unset these two
       # and the Update button simply says this install can't update itself.

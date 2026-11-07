@@ -96,11 +96,12 @@ export class MenuService {
   }
 
   async createItem(branchId: string, dto: MenuItemDto) {
-    const { modifierGroupIds, ...rest } = dto;
+    const { modifierGroupIds, hsnCode, ...rest } = dto;
     await this.assertModifierGroupsInBranch(branchId, modifierGroupIds);
     return this.prisma.menuItem.create({
       data: {
         ...rest,
+        hsnCode: hsnCode ? hsnCode : null,
         branchId,
         modifierGroups: {
           create: modifierGroupIds.map((modifierGroupId, index) => ({
@@ -120,7 +121,7 @@ export class MenuService {
     dto: Partial<MenuItemDto>,
   ) {
     const existing = await this.getItem(branchId, id);
-    const { modifierGroupIds, ...rest } = dto;
+    const { modifierGroupIds, hsnCode, ...rest } = dto;
     if (modifierGroupIds) {
       await this.assertModifierGroupsInBranch(branchId, modifierGroupIds);
     }
@@ -138,7 +139,13 @@ export class MenuService {
           })),
         });
       }
-      return tx.menuItem.update({ where: { id }, data: rest });
+      return tx.menuItem.update({
+        where: { id },
+        data: {
+          ...rest,
+          ...(hsnCode !== undefined ? { hsnCode: hsnCode || null } : {}),
+        },
+      });
     });
 
     // Price is the single most owner-relevant field here, so it's logged

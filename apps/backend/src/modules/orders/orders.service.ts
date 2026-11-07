@@ -50,6 +50,8 @@ import {
 } from '../../common/online-price';
 import { ReferralsService } from '../referrals/referrals.service';
 import { VerifactuService } from '../verifactu/verifactu.service';
+import { BranchHoursService } from '../../common/services/branch-hours.service';
+import { assignIndiaInvoice, isGstin } from './invoice-number';
 
 const KOT_FORWARD_STATUSES = [
   'ACCEPTED',
@@ -73,6 +75,7 @@ export class OrdersService {
     private readonly webhooks: WebhooksService,
     private readonly verifactu: VerifactuService,
     private readonly referrals: ReferralsService,
+    private readonly hours: BranchHoursService,
   ) {}
 
   async listOpen(branchId: string, tableId?: string) {
@@ -120,7 +123,9 @@ export class OrdersService {
       include: {
         table: true,
         customer: true,
-        items: { include: { modifiers: true } },
+        items: {
+          include: { modifiers: true, menuItem: { select: { hsnCode: true } } },
+        },
         payments: true,
         branch: { include: { restaurant: true } },
       },
@@ -361,91 +366,107 @@ export class OrdersService {
       }
     }
 
-    const orderNumber = await this.nextOrderNumber(branchId);
+    if (channel === 'ONLINE') {
+      await this.hours.assertOpen(branchId, scheduledFor ?? new Date());
+    }
 
-    const order = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.order.create({
-        data: {
-          branchId,
-          orderNumber,
-          type: dto.type,
-          channel,
-          acceptance,
-          tableId: dto.tableId,
-          guestCount: dto.guestCount,
-          customerId: dto.customerId,
-          guestName: dto.guestName,
-          notes: dto.notes,
-          clientRequestId: options.clientRequestId,
-          ...(options.historical ? { createdAt: options.historical.createdAt } : {}),
-          integrationKeyId: options.integrationKeyId,
-          clientRequestHash: options.clientRequestHash,
-          externalSource: options.externalSource,
-          externalOrderId: options.externalOrderId,
-          externalCustomerRef: options.externalCustomerRef,
-          createdById: userId,
-          subtotal: totals.subtotal,
-          taxAmount: totals.taxAmount,
-          discountAmount: 0,
-          totalAmount: totals.subtotal,
-          scheduledFor,
-          ...(delivery
-            ? {
-                deliveryZoneId: delivery.deliveryZoneId,
-                deliveryFee: delivery.deliveryFee,
-                deliveryAddress: delivery.deliveryAddress,
-                deliveryPincode: delivery.deliveryPincode,
-                deliveryPhone: delivery.deliveryPhone,
-                deliveryLat: delivery.deliveryLat,
-                deliveryLng: delivery.deliveryLng,
-                deliveryPlace: delivery.deliveryPlace,
-                deliveryStatus: delivery.deliveryStatus,
-                deliveryEtaAt: delivery.deliveryEtaAt,
-              }
-            : {}),
-          items: {
-            create: lineInputs.map((line) => ({
-              menuItem: { connect: { id: line.menuItem.id } },
-              nameSnapshot: line.menuItem.name,
-              unitPriceSnapshot: line.menuItem.price,
-              taxRateSnapshot: line.menuItem.taxRatePercent,
-              quantity: line.cartItem.quantity,
-              lineTotal: line.priced.lineTotal,
-              kitchenNote: line.cartItem.kitchenNote,
-              modifiers: {
-                create: line.selectedModifiers.map((m) => ({
-                  modifier: { connect: { id: m.id } },
-                  nameSnapshot: m.name,
-                  priceAdjSnapshot: m.priceAdjustment,
+    let order: { id: string } | undefined;
+    for (let attempt = 0; attempt < 15; attempt++) {
+      try {
+        order = await this.prisma.$transaction(async (tx) => {
+          const orderNumber = await this.nextOrderNumber(branchId, tx);
+          const created = await tx.order.create({
+            data: {
+              branchId,
+              orderNumber,
+              type: dto.type,
+              channel,
+              acceptance,
+              tableId: dto.tableId,
+              guestCount: dto.guestCount,
+              customerId: dto.customerId,
+              guestName: dto.guestName,
+              notes: dto.notes,
+              clientRequestId: options.clientRequestId,
+              ...(options.historical
+                ? { createdAt: options.historical.createdAt }
+                : {}),
+              integrationKeyId: options.integrationKeyId,
+              clientRequestHash: options.clientRequestHash,
+              externalSource: options.externalSource,
+              externalOrderId: options.externalOrderId,
+              externalCustomerRef: options.externalCustomerRef,
+              createdById: userId,
+              subtotal: totals.subtotal,
+              taxAmount: totals.taxAmount,
+              discountAmount: 0,
+              totalAmount: totals.subtotal,
+              scheduledFor,
+              ...(delivery
+                ? {
+                    deliveryZoneId: delivery.deliveryZoneId,
+                    deliveryFee: delivery.deliveryFee,
+                    deliveryAddress: delivery.deliveryAddress,
+                    deliveryPincode: delivery.deliveryPincode,
+                    deliveryPhone: delivery.deliveryPhone,
+                    deliveryLat: delivery.deliveryLat,
+                    deliveryLng: delivery.deliveryLng,
+                    deliveryPlace: delivery.deliveryPlace,
+                    deliveryStatus: delivery.deliveryStatus,
+                    deliveryEtaAt: delivery.deliveryEtaAt,
+                  }
+                : {}),
+              items: {
+                create: lineInputs.map((line) => ({
+                  menuItem: { connect: { id: line.menuItem.id } },
+                  nameSnapshot: line.menuItem.name,
+                  unitPriceSnapshot: line.menuItem.price,
+                  taxRateSnapshot: line.menuItem.taxRatePercent,
+                  quantity: line.cartItem.quantity,
+                  lineTotal: line.priced.lineTotal,
+                  kitchenNote: line.cartItem.kitchenNote,
+                  modifiers: {
+                    create: line.selectedModifiers.map((m) => ({
+                      modifier: { connect: { id: m.id } },
+                      nameSnapshot: m.name,
+                      priceAdjSnapshot: m.priceAdjustment,
+                    })),
+                  },
                 })),
               },
-            })),
-          },
-        },
-        include: { items: true },
-      });
+            },
+            include: { items: true },
+          });
 
-      if (dto.tableId && !options.historical) {
-        await tx.table.update({
-          where: { id: dto.tableId },
-          data: { status: 'OCCUPIED', statusSince: new Date() },
+          if (dto.tableId && !options.historical) {
+            await tx.table.update({
+              where: { id: dto.tableId },
+              data: { status: 'OCCUPIED', statusSince: new Date() },
+            });
+          }
+
+          // A pending online order must not reach the kitchen until accepted
+          // (acceptOrder() generates the tickets then).
+          // A scheduled order also waits: releaseDueScheduledOrders() sends it to
+          // the kitchen shortly before its time.
+          if (
+            acceptance !== 'PENDING' &&
+            !this.isDeferred(scheduledFor) &&
+            !options.historical
+          ) {
+            await this.generateKots(tx, created.id, branchId, created.items);
+          }
+
+          return created;
         });
+        break;
+      } catch (err) {
+        if (!this.isOrderNumberClash(err) || attempt === 14) throw err;
       }
-
-      // A pending online order must not reach the kitchen until accepted
-      // (acceptOrder() generates the tickets then).
-      // A scheduled order also waits: releaseDueScheduledOrders() sends it to
-      // the kitchen shortly before its time.
-      if (
-        acceptance !== 'PENDING' &&
-        !this.isDeferred(scheduledFor) &&
-        !options.historical
-      ) {
-        await this.generateKots(tx, created.id, branchId, created.items);
-      }
-
-      return created;
-    });
+    }
+    if (!order) {
+      throw new ConflictException('Could not allocate an order number');
+    }
 
     if (options.historical) return this.getOrder(branchId, order.id);
 
@@ -517,6 +538,7 @@ export class OrdersService {
       include: { items: true, payments: { select: { id: true } } },
     });
     if (!order) throw new NotFoundException('Order not found');
+    if (options.websiteOnly) await this.hours.assertOpen(branchId);
     this.assertNoPayments(order);
     await this.validateModifierSelections(
       branchId,
@@ -772,6 +794,13 @@ export class OrdersService {
         `Only finished transactions can be deleted — ${live
           .map((o) => `#${o.orderNumber}`)
           .join(', ')} still in progress`,
+      );
+    }
+
+    const taxed = orders.filter((o) => o.invoiceNumber);
+    if (taxed.length > 0) {
+      throw new BadRequestException(
+        'Sales with a tax invoice cannot be deleted. Refund the sale instead.',
       );
     }
 
@@ -1528,6 +1557,9 @@ export class OrdersService {
         'This order has not been accepted yet - accept it before taking payment',
       );
     }
+    if (dto.customerGstin && !isGstin(dto.customerGstin)) {
+      throw new BadRequestException('Enter a valid GSTIN');
+    }
 
     const branch = await this.prisma.branch.findUniqueOrThrow({
       where: { id: branchId },
@@ -1699,6 +1731,12 @@ export class OrdersService {
               loyaltyDiscountAmount,
               tipAmount: bill.tipAmount,
               totalAmount: bill.totalDue,
+              ...(dto.customerGstin
+                ? { customerGstin: dto.customerGstin.trim().toUpperCase() }
+                : {}),
+              ...(dto.customerLegalName
+                ? { customerLegalName: dto.customerLegalName.trim() }
+                : {}),
             };
 
         if (!settlement.fullyPaid) {
@@ -1776,6 +1814,7 @@ export class OrdersService {
             payments: { create: paymentRows },
           },
         });
+        await assignIndiaInvoice(tx, orderId);
         // Spain VERI*FACTU: the sale's fiscal record is written in this same transaction, so a sale
         // is never paid without it (and a failure to produce it rolls the payment back).
         await this.verifactu.recordPaidOrder(tx, orderId);
@@ -2192,11 +2231,14 @@ export class OrdersService {
 
   // Next number for today: highest existing sequence + 1, not a row count. A
   // count collides with an existing number as soon as any earlier order of the
-  // day has been deleted (orders.delete), and that surfaced as a 409 on the
-  // unique (branchId, orderNumber) index.
-  private async nextOrderNumber(branchId: string): Promise<string> {
+  // day has been deleted (orders.delete). Concurrent creates can still read
+  // the same max; createOrder retries when the unique index rejects that.
+  private async nextOrderNumber(
+    branchId: string,
+    tx: Prisma.TransactionClient,
+  ): Promise<string> {
     const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const latest = await this.prisma.order.findFirst({
+    const latest = await tx.order.findFirst({
       where: { branchId, orderNumber: { startsWith: `${datePart}-` } },
       orderBy: { orderNumber: 'desc' },
       select: { orderNumber: true },
@@ -2204,6 +2246,22 @@ export class OrdersService {
     const last = latest ? Number(latest.orderNumber.split('-')[1]) : 0;
     const next = (Number.isFinite(last) ? last : 0) + 1;
     return `${datePart}-${String(next).padStart(4, '0')}`;
+  }
+
+  private isOrderNumberClash(err: unknown): boolean {
+    if (
+      !(err instanceof Prisma.PrismaClientKnownRequestError) ||
+      err.code !== 'P2002'
+    ) {
+      return false;
+    }
+    const target = err.meta?.target;
+    const fields = Array.isArray(target)
+      ? target.filter((field): field is string => typeof field === 'string')
+      : typeof target === 'string'
+        ? [target]
+        : [];
+    return fields.some((field) => field.includes('orderNumber'));
   }
 
   /**

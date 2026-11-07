@@ -51,7 +51,7 @@ export function KioskApp({ token }: { token: string }) {
         : { status: "unreachable" }
       : { status: "loading" };
 
-  const localeTag = locale === "es" ? "es-ES" : "en-GB";
+  const localeTag = locale === "es" ? "es-ES" : locale === "hi" ? "hi-IN" : locale === "fr" ? "fr-FR" : "en-GB";
   const fmt = useCallback(
     (n: number | string) => formatCurrency(n, menu?.currency ?? "EUR", localeTag),
     [menu?.currency, localeTag],
@@ -164,7 +164,16 @@ export function KioskApp({ token }: { token: string }) {
     state.serviceType === "DINE_IN" ? t("kiosk.service.dineIn") : t("kiosk.service.takeaway");
 
   let screen: React.ReactNode;
-  if (state.step === "welcome" || !menu) {
+  if (menu && menu.orderingOpen === false) {
+    screen = (
+      <div className="flex h-full flex-col">
+        {header}
+        <div className="flex flex-1 items-center justify-center p-8 text-center text-3xl font-semibold">
+          {t("order.closed")}
+        </div>
+      </div>
+    );
+  } else if (state.step === "welcome" || !menu) {
     screen = (
       <WelcomeScreen
         load={load}

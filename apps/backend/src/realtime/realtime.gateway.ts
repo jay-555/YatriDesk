@@ -58,11 +58,14 @@ export class RealtimeGateway
       const token = this.extractSessionCookie(client);
       if (!token) throw new Error('No session cookie');
 
-      const payload = this.jwt.verify<{ sub: string }>(token);
+      const payload = this.jwt.verify<{ sub: string; kind?: string }>(token);
+      if (payload.kind === 'platform') throw new Error('Platform session');
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
+        include: { restaurant: { select: { status: true } } },
       });
       if (!user || !user.isActive) throw new Error('Session no longer valid');
+      if (user.restaurant.status === 'SUSPENDED') throw new Error('Restaurant suspended');
 
       const branchId = client.handshake.query.branchId;
       if (typeof branchId !== 'string' || !branchId) {

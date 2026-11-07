@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PERMISSIONS } from '@yatrideesk/types';
+import { INSTANCE_PERMISSIONS, isSaasMode } from '../common/saas-mode';
 import { PrismaService } from '../prisma/prisma.service';
 
 // Roles this deep are meant to always hold every permission that exists —
@@ -57,6 +58,12 @@ export class PermissionsSyncService implements OnModuleInit {
       }
     }
     const allPermissions = await this.prisma.permission.findMany();
+    const blocked = new Set<string>(isSaasMode() ? INSTANCE_PERMISSIONS : []);
+    if (blocked.size > 0) {
+      await this.prisma.rolePermission.deleteMany({
+        where: { permission: { key: { in: [...blocked] } } },
+      });
+    }
 
     const roles = await this.prisma.role.findMany({
       where: { name: { in: [...ALWAYS_FULL_ACCESS_ROLES] } },
@@ -65,7 +72,7 @@ export class PermissionsSyncService implements OnModuleInit {
 
     for (const role of roles) {
       const grantedIds = new Set(role.permissions.map((p) => p.permissionId));
-      const missing = allPermissions.filter((p) => !grantedIds.has(p.id));
+      const missing = allPermissions.filter((p) => !grantedIds.has(p.id) && !blocked.has(p.key));
       if (missing.length === 0) continue;
 
       await this.prisma.rolePermission.createMany({

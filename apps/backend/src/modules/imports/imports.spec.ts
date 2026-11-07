@@ -7,6 +7,7 @@ import { templateCsv } from './templates';
 
 const menu = (csv: string) => validateMenu(parseCsv(csv));
 const ing = (csv: string) => validateIngredients(parseCsv(csv));
+const normalize = (value: string) => value.replace(/\r\n/g, '\n');
 
 describe('shipped example files', () => {
   it('the menu example imports with no errors, and the docs copy matches the download', () => {
@@ -19,7 +20,7 @@ describe('shipped example files', () => {
       join(__dirname, '../../../../../docs/examples/menu-items.csv'),
       'utf8',
     );
-    expect(onDisk).toBe(templateCsv('menu', true));
+    expect(normalize(onDisk)).toBe(normalize(templateCsv('menu', true)));
   });
 
   it('the ingredient example imports with no errors, and the docs copy matches the download', () => {
@@ -30,7 +31,7 @@ describe('shipped example files', () => {
       join(__dirname, '../../../../../docs/examples/ingredients.csv'),
       'utf8',
     );
-    expect(onDisk).toBe(templateCsv('ingredients', true));
+    expect(normalize(onDisk)).toBe(normalize(templateCsv('ingredients', true)));
   });
 
   it('the blank templates have headers only and are accepted as "no rows"', () => {

@@ -40,6 +40,7 @@ export const PERMISSIONS = [
   { key: "marketing.manage", label: "Manage Coupons, Promotions & Campaigns", category: "Marketing" },
   { key: "operations.manage", label: "Manage Equipment & Documents", category: "Operations" },
   { key: "system.update", label: "Manage App Updates", category: "Admin" },
+  { key: "branches.view_all", label: "See every outlet", category: "Admin" },
 ] as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[number]["key"];

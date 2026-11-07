@@ -25,6 +25,8 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   permission?: string;
+  /** Hidden on the hosted service unless this feature flag is on. */
+  featureKey?: "inventory" | "equipment" | "kiosk" | "payroll" | "bank" | "procurement" | "referrals";
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -41,14 +43,15 @@ export const NAV_ITEMS: NavItem[] = [
   { labelKey: "nav.menu", href: "/menu", icon: UtensilsCrossed, permission: "menu.view" },
   { labelKey: "nav.kds", href: "/kds", icon: ChefHat, permission: "kds.manage" },
   { labelKey: "nav.customers", href: "/customers", icon: UsersRound, permission: "customers.manage" },
-  { labelKey: "nav.inventory", href: "/inventory", icon: Package, permission: "inventory.manage" },
+  { labelKey: "nav.inventory", href: "/inventory", icon: Package, permission: "inventory.manage", featureKey: "inventory" },
   { labelKey: "nav.myDeliveries", href: "/my-deliveries", icon: Bike, permission: "delivery.rider" },
   { labelKey: "nav.delivery", href: "/delivery", icon: Truck, permission: "delivery.manage" },
   { labelKey: "nav.team", href: "/team", icon: Users, permission: "staff.manage" },
   { labelKey: "nav.accounting", href: "/accounting", icon: Landmark, permission: "accounting.manage" },
   { labelKey: "nav.reports", href: "/reports", icon: BarChart3, permission: "reports.access" },
   { labelKey: "nav.marketing", href: "/marketing", icon: Megaphone, permission: "marketing.manage" },
-  { labelKey: "nav.operations", href: "/operations", icon: Wrench, permission: "operations.manage" },
+  { labelKey: "nav.operations", href: "/operations", icon: Wrench, permission: "operations.manage", featureKey: "equipment" },
   { labelKey: "nav.attendance", href: "/attendance", icon: Clock },
+  { labelKey: "nav.setup", href: "/onboarding", icon: ClipboardList, permission: "settings.manage" },
   { labelKey: "nav.settings", href: "/settings", icon: Settings, permission: "settings.manage" },
 ];

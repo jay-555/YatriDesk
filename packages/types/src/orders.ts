@@ -163,6 +163,8 @@ export const checkoutSchema = z.object({
   // Why a manual discount was given; stored on the order.
   discountReason: z.string().trim().min(1).max(200).optional(),
   customerId: z.string().optional(),
+  customerGstin: z.string().trim().max(15).optional(),
+  customerLegalName: z.string().trim().max(120).optional(),
   giftCardCode: z.string().optional(),
   payments: z
     .array(
