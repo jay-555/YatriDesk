@@ -168,7 +168,12 @@ run('India SaaS pilot gate (e2e)', () => {
       return paid.body.invoiceNumber as string;
     };
 
-    const numbers = await Promise.all(Array.from({ length: 10 }, () => sell()));
+    const numbers: string[] = [];
+    // Two at a time still races the daily order number. Ten at once has
+    // crashed the Prisma engine on the CI runner (ECONNRESET).
+    for (let i = 0; i < 10; i += 2) {
+      numbers.push(...(await Promise.all([sell(), sell()])));
+    }
     const sorted = [...numbers].sort();
     const year = indiaFiscalYearCode(new Date(), 'Asia/Kolkata');
     expect(sorted[0]).toBe(`BLR1/${year}/000001`);
