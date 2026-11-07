@@ -73,6 +73,7 @@ interface PublicMenuResponse {
   branchName: string;
   tableName: string;
   orderingOpen?: boolean;
+  onlineOrdering?: boolean;
   categories: PublicMenuCategory[];
 }
 
@@ -194,6 +195,14 @@ export default function PublicMenuPage({
         <p className="text-sm text-muted-foreground">
           {error instanceof ApiError ? error.message : t("order.askStaffForHelp")}
         </p>
+      </div>
+    );
+  }
+
+  if (data && data.onlineOrdering === false) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-6 text-center">
+        <p className="text-lg font-medium text-foreground">{t("order.unavailable")}</p>
       </div>
     );
   }

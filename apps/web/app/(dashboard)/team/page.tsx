@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBranch } from "@/hooks/use-branch";
+import { useFeatures } from "@/hooks/use-features";
 import {
   useHrActions,
   useLeave,
@@ -344,6 +345,8 @@ function Performance({ branchId }: { branchId: string | null }) {
 
 function TeamView() {
   const { branchId } = useBranch();
+  const payrollOn = useFeatures().data?.flags.payroll !== false;
+  const tabs = TABS.filter((t) => payrollOn || t !== "payroll");
   const params = useSearchParams();
   const [tab, setTab] = useState<Tab>(() => {
     const t = params.get("tab");
@@ -356,7 +359,7 @@ function TeamView() {
         <p className="text-sm text-muted-foreground">Schedules, leave, payroll and performance</p>
       </div>
       <div className="flex flex-wrap gap-2">
-        {TABS.map((t) => (
+        {tabs.map((t) => (
           <button
             key={t}
             type="button"
@@ -372,7 +375,7 @@ function TeamView() {
       </div>
       {tab === "schedule" && <Schedule branchId={branchId} />}
       {tab === "leave" && <Leave branchId={branchId} />}
-      {tab === "payroll" && <Payroll branchId={branchId} />}
+      {payrollOn && tab === "payroll" && <Payroll branchId={branchId} />}
       {tab === "performance" && <Performance branchId={branchId} />}
     </div>
   );

@@ -17,6 +17,7 @@
   "order.couldNotPlace": "ऑर्डर नहीं हो सका — कृपया किसी कर्मचारी से मदद लें।",
   "order.pricesIncludeTax": "कीमत में कर शामिल है। कर्मचारी जल्द ऑर्डर की पुष्टि करेंगे।",
   "order.closed": "यह आउटलेट अभी बंद है। कृपया बाद में कोशिश करें।",
+  "order.unavailable": "ऑनलाइन ऑर्डर उपलब्ध नहीं है।",
   "kiosk.welcome.title": "यहाँ ऑर्डर करें",
   "kiosk.welcome.touch": "शुरू करने के लिए स्क्रीन छुएँ",
   "kiosk.service.title": "आप कहाँ खाएँगे?",

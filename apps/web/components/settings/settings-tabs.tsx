@@ -21,7 +21,6 @@ interface SettingsTab {
 
 const TABS: SettingsTab[] = [
   { label: "General", href: "/settings" },
-  { label: "Outlet", href: "/settings/outlet", permission: "settings.manage" },
   { label: "Billing", href: "/settings/billing", permission: "settings.manage" },
   { label: "Privacy", href: "/settings/privacy" },
   { label: "Staff", href: "/settings/staff", permission: "users.manage" },

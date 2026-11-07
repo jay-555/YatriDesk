@@ -9,6 +9,8 @@ import { useRealtime } from "@/hooks/use-realtime";
 import { NativeBridge } from "@/components/native/native-bridge";
 import { BtPrinterDialog } from "@/components/native/bt-printer-dialog";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
+import { useFeatures } from "@/hooks/use-features";
+import { modulePageAllowed } from "@/lib/modules";
 import { canOpen, firstAllowedHref } from "@/lib/route-access";
 
 // Subscribes every route in this layout group to realtime push (order/KOT/
@@ -30,8 +32,15 @@ export default function DashboardGroupLayout({ children }: { children: React.Rea
   const pathname = usePathname();
   const { data, isLoading, isError } = useCurrentUser();
   const permissions = data?.user.permissions;
-  const allowed = !permissions || canOpen(pathname ?? "", permissions, NAV_ITEMS);
-  const fallback = permissions ? firstAllowedHref(permissions, NAV_ITEMS) : undefined;
+  const flags = useFeatures().data?.flags;
+  const featureAllowed = modulePageAllowed(pathname ?? "", flags);
+  const allowed = (!permissions || canOpen(pathname ?? "", permissions, NAV_ITEMS)) && featureAllowed;
+  const fallback = permissions
+    ? firstAllowedHref(
+        permissions,
+        NAV_ITEMS.filter((item) => !item.featureKey || flags?.[item.featureKey] !== false),
+      )
+    : undefined;
 
   useEffect(() => {
     if (!isLoading && isError) {

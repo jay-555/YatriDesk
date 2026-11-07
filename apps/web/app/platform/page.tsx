@@ -55,11 +55,14 @@ export default function PlatformHomePage() {
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-8 px-6 py-10">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Restaurants</h1>
-        <Button variant="outline" onClick={() => api.post("/platform/logout").then(() => router.replace("/platform/login"))}>
-          Sign out
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" render={<Link href="/platform/modules" />}>Modules</Button>
+          <Button variant="outline" onClick={() => api.post("/platform/logout").then(() => router.replace("/platform/login"))}>
+            Sign out
+          </Button>
+        </div>
       </div>
       {created && (
         <p className="rounded-lg border border-border p-4 text-sm">

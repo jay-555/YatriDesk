@@ -29,6 +29,7 @@ export interface RestaurantSettings {
   onlinePriceAdjustValue: string;
   maxManualDiscountPercent: string;
   requireDiscountReason: boolean;
+  pan: string | null;
 }
 
 export interface BranchSettings {
@@ -37,6 +38,10 @@ export interface BranchSettings {
   address: string | null;
   phone: string | null;
   gstNumber: string | null;
+  fssaiNumber: string | null;
+  gstScheme: "REGULAR" | "COMPOSITION";
+  invoicePrefix: string | null;
+  temporarilyClosed: boolean;
   country: string;
   taxRegime: TaxRegime;
   taxMode: TaxMode;
@@ -102,6 +107,64 @@ export function useUpdateRestaurantSettings(branchId: string | null) {
 export function useUploadRestaurantLogo() {
   return useMutation({
     mutationFn: (file: File) => api.upload<{ url: string }>("/settings/restaurant/logo", file),
+  });
+}
+
+export interface BranchHoursWindow {
+  id: string;
+  dayOfWeek: number;
+  openTime: string;
+  closeTime: string;
+}
+
+export interface BranchClosureRow {
+  id: string;
+  date: string;
+  reason: string | null;
+}
+
+export function useBranchHours(branchId: string | null) {
+  return useQuery({
+    queryKey: ["settings", branchId, "hours"],
+    queryFn: () =>
+      api.get<{
+        hours: BranchHoursWindow[];
+        closures: BranchClosureRow[];
+        temporarilyClosed: boolean;
+      }>(`/settings/hours?branchId=${branchId}`),
+    enabled: !!branchId,
+  });
+}
+
+export function useReplaceBranchHours(branchId: string | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (window: { openTime: string; closeTime: string }) =>
+      api.put(`/settings/hours?branchId=${branchId}`, {
+        windows: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+          dayOfWeek,
+          openTime: window.openTime,
+          closeTime: window.closeTime,
+        })),
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["settings", branchId, "hours"] }),
+  });
+}
+
+export function useAddBranchClosure(branchId: string | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (date: string) =>
+      api.put(`/settings/hours/closures?branchId=${branchId}`, { date }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["settings", branchId, "hours"] }),
+  });
+}
+
+export function useRemoveBranchClosure(branchId: string | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/settings/hours/closures/${id}?branchId=${branchId}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["settings", branchId, "hours"] }),
   });
 }
 

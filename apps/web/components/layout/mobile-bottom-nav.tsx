@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useNavBadges } from "@/hooks/use-nav-badges";
 import { NAV_ITEMS } from "./nav-items";
+import { useFeatures } from "@/hooks/use-features";
 
 // The screens staff jump between all shift long, in priority order. Whatever
 // the signed-in role can't open is skipped, so a kitchen-only login still gets
@@ -27,10 +28,11 @@ export function MobileBottomNav({
   const pathname = usePathname();
   const { t } = useI18n();
   const badges = useNavBadges();
+  const flags = useFeatures().data?.flags;
 
   const allowed = NAV_ITEMS.filter(
     (item) => !item.permission || hasPermission(user, item.permission),
-  );
+  ).filter((item) => !item.featureKey || flags?.[item.featureKey] !== false);
   const primary = PRIMARY_HREFS.map((href) => allowed.find((i) => i.href === href))
     .filter((i): i is (typeof allowed)[number] => !!i)
     .slice(0, PRIMARY_COUNT);

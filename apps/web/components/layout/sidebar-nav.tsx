@@ -21,14 +21,12 @@ export function SidebarNav({
   const pathname = usePathname();
   const { t } = useI18n();
   const badges = useNavBadges();
-  const features = useFeatures();
-  const saas = features.data?.saasMode === true;
-  const flags = features.data?.flags;
+  const flags = useFeatures().data?.flags;
 
   return (
     <nav className="flex flex-col gap-1 px-3">
       {NAV_ITEMS.filter((item) => !item.permission || hasPermission(user, item.permission))
-        .filter((item) => !saas || !item.featureKey || flags?.[item.featureKey] === true)
+        .filter((item) => !item.featureKey || flags?.[item.featureKey] !== false)
         .map(
         (item) => {
           const isActive = pathname?.startsWith(item.href);

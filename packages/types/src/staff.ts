@@ -1,13 +1,38 @@
 import { z } from "zod";
 
+function blankToUndefined(value: unknown) {
+  if (typeof value === "string" && value.trim() === "") return undefined;
+  return value;
+}
+
 export const createStaffSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-  password: z.string().min(8),
-  roleId: z.string().min(1),
-  branchIds: z.array(z.string()).min(1),
-  departmentId: z.string().min(1).nullable().optional(),
+  name: z.string().trim().min(1, "Enter the staff member's name"),
+  email: z.preprocess(
+    blankToUndefined,
+    z
+      .string()
+      .trim()
+      .email("Enter a valid email address like name@example.com")
+      .optional(),
+  ),
+  phone: z.preprocess(
+    blankToUndefined,
+    z
+      .string()
+      .trim()
+      .refine(
+        (value) => value.replace(/\D/g, "").length >= 6,
+        "Enter a phone number with at least 6 digits",
+      )
+      .optional(),
+  ),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  roleId: z.string().min(1, "Choose a role"),
+  branchIds: z.array(z.string()).min(1, "Select at least one branch"),
+  departmentId: z.preprocess(
+    blankToUndefined,
+    z.string().min(1).nullable().optional(),
+  ),
 });
 export type CreateStaffDto = z.infer<typeof createStaffSchema>;
 

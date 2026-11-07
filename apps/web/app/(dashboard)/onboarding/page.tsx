@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 const STEPS = [
-  { href: "/settings/outlet", title: "Outlet and tax", body: "Legal name, state, GSTIN, FSSAI, composition or regular, and opening hours." },
+  { href: "/settings", title: "Branch and tax", body: "On General, set the branch address, GSTIN, FSSAI, composition or regular GST, and the hours guests can order." },
   { href: "/menu", title: "Menu", body: "Add items, or import a CSV from the menu page. Set an HSN code where you have one; otherwise the bill uses SAC 996331." },
   { href: "/team", title: "First cashier", body: "Create a cashier so the owner is not the only person who can take an order." },
   { href: "/pos", title: "Test bill", body: "Take one dine-in order and print the browser tax invoice or bill of supply." },

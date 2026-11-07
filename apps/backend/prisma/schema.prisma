@@ -2719,6 +2719,16 @@ model FeatureFlag {
   @@map("feature_flags")
 }
 
+// Instance-wide module switch. A missing row means the module is on for the
+// whole server. A restaurant FeatureFlag can still turn it off for one tenant,
+// and cannot turn it back on while this row is disabled.
+model ModuleSwitch {
+  key     String  @id
+  enabled Boolean @default(true)
+
+  @@map("module_switches")
+}
+
 model SaasInvoiceSequence {
   id         String @id @default("saas")
   lastNumber Int    @default(0)
