@@ -26,7 +26,7 @@ jobs:
       - run: pnpm --filter @yatrideesk/backend exec prisma generate
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm --filter @yatrideesk/backend test -- --passWithNoTests
+      - run: pnpm --filter @yatrideesk/backend exec jest --passWithNoTests
       - run: pnpm --filter web test
       - run: pnpm build
 

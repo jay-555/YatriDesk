@@ -54,7 +54,7 @@ run('India SaaS pilot gate (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-  });
+  }, 30_000);
 
   async function platformLogin() {
     const email = process.env.PLATFORM_ADMIN_EMAIL!;

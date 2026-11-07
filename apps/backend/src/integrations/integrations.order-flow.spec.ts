@@ -39,7 +39,6 @@ function build(opts: { zones?: boolean } = {}) {
   const customers: any[] = [];
 
   const tx = {
-    $queryRaw: jest.fn(async () => []),
     order: {
       findFirst: jest.fn(async () => null),
       create: jest.fn(async ({ data }: any) => {

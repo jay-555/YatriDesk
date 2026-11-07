@@ -123,7 +123,9 @@ export class OrdersService {
       include: {
         table: true,
         customer: true,
-        items: { include: { modifiers: true, menuItem: { select: { hsnCode: true } } } },
+        items: {
+          include: { modifiers: true, menuItem: { select: { hsnCode: true } } },
+        },
         payments: true,
         branch: { include: { restaurant: true } },
       },
@@ -368,90 +370,103 @@ export class OrdersService {
       await this.hours.assertOpen(branchId, scheduledFor ?? new Date());
     }
 
-    const order = await this.prisma.$transaction(async (tx) => {
-      const orderNumber = await this.nextOrderNumber(branchId, tx);
-      const created = await tx.order.create({
-        data: {
-          branchId,
-          orderNumber,
-          type: dto.type,
-          channel,
-          acceptance,
-          tableId: dto.tableId,
-          guestCount: dto.guestCount,
-          customerId: dto.customerId,
-          guestName: dto.guestName,
-          notes: dto.notes,
-          clientRequestId: options.clientRequestId,
-          ...(options.historical ? { createdAt: options.historical.createdAt } : {}),
-          integrationKeyId: options.integrationKeyId,
-          clientRequestHash: options.clientRequestHash,
-          externalSource: options.externalSource,
-          externalOrderId: options.externalOrderId,
-          externalCustomerRef: options.externalCustomerRef,
-          createdById: userId,
-          subtotal: totals.subtotal,
-          taxAmount: totals.taxAmount,
-          discountAmount: 0,
-          totalAmount: totals.subtotal,
-          scheduledFor,
-          ...(delivery
-            ? {
-                deliveryZoneId: delivery.deliveryZoneId,
-                deliveryFee: delivery.deliveryFee,
-                deliveryAddress: delivery.deliveryAddress,
-                deliveryPincode: delivery.deliveryPincode,
-                deliveryPhone: delivery.deliveryPhone,
-                deliveryLat: delivery.deliveryLat,
-                deliveryLng: delivery.deliveryLng,
-                deliveryPlace: delivery.deliveryPlace,
-                deliveryStatus: delivery.deliveryStatus,
-                deliveryEtaAt: delivery.deliveryEtaAt,
-              }
-            : {}),
-          items: {
-            create: lineInputs.map((line) => ({
-              menuItem: { connect: { id: line.menuItem.id } },
-              nameSnapshot: line.menuItem.name,
-              unitPriceSnapshot: line.menuItem.price,
-              taxRateSnapshot: line.menuItem.taxRatePercent,
-              quantity: line.cartItem.quantity,
-              lineTotal: line.priced.lineTotal,
-              kitchenNote: line.cartItem.kitchenNote,
-              modifiers: {
-                create: line.selectedModifiers.map((m) => ({
-                  modifier: { connect: { id: m.id } },
-                  nameSnapshot: m.name,
-                  priceAdjSnapshot: m.priceAdjustment,
+    let order: { id: string } | undefined;
+    for (let attempt = 0; attempt < 15; attempt++) {
+      try {
+        order = await this.prisma.$transaction(async (tx) => {
+          const orderNumber = await this.nextOrderNumber(branchId, tx);
+          const created = await tx.order.create({
+            data: {
+              branchId,
+              orderNumber,
+              type: dto.type,
+              channel,
+              acceptance,
+              tableId: dto.tableId,
+              guestCount: dto.guestCount,
+              customerId: dto.customerId,
+              guestName: dto.guestName,
+              notes: dto.notes,
+              clientRequestId: options.clientRequestId,
+              ...(options.historical
+                ? { createdAt: options.historical.createdAt }
+                : {}),
+              integrationKeyId: options.integrationKeyId,
+              clientRequestHash: options.clientRequestHash,
+              externalSource: options.externalSource,
+              externalOrderId: options.externalOrderId,
+              externalCustomerRef: options.externalCustomerRef,
+              createdById: userId,
+              subtotal: totals.subtotal,
+              taxAmount: totals.taxAmount,
+              discountAmount: 0,
+              totalAmount: totals.subtotal,
+              scheduledFor,
+              ...(delivery
+                ? {
+                    deliveryZoneId: delivery.deliveryZoneId,
+                    deliveryFee: delivery.deliveryFee,
+                    deliveryAddress: delivery.deliveryAddress,
+                    deliveryPincode: delivery.deliveryPincode,
+                    deliveryPhone: delivery.deliveryPhone,
+                    deliveryLat: delivery.deliveryLat,
+                    deliveryLng: delivery.deliveryLng,
+                    deliveryPlace: delivery.deliveryPlace,
+                    deliveryStatus: delivery.deliveryStatus,
+                    deliveryEtaAt: delivery.deliveryEtaAt,
+                  }
+                : {}),
+              items: {
+                create: lineInputs.map((line) => ({
+                  menuItem: { connect: { id: line.menuItem.id } },
+                  nameSnapshot: line.menuItem.name,
+                  unitPriceSnapshot: line.menuItem.price,
+                  taxRateSnapshot: line.menuItem.taxRatePercent,
+                  quantity: line.cartItem.quantity,
+                  lineTotal: line.priced.lineTotal,
+                  kitchenNote: line.cartItem.kitchenNote,
+                  modifiers: {
+                    create: line.selectedModifiers.map((m) => ({
+                      modifier: { connect: { id: m.id } },
+                      nameSnapshot: m.name,
+                      priceAdjSnapshot: m.priceAdjustment,
+                    })),
+                  },
                 })),
               },
-            })),
-          },
-        },
-        include: { items: true },
-      });
+            },
+            include: { items: true },
+          });
 
-      if (dto.tableId && !options.historical) {
-        await tx.table.update({
-          where: { id: dto.tableId },
-          data: { status: 'OCCUPIED', statusSince: new Date() },
+          if (dto.tableId && !options.historical) {
+            await tx.table.update({
+              where: { id: dto.tableId },
+              data: { status: 'OCCUPIED', statusSince: new Date() },
+            });
+          }
+
+          // A pending online order must not reach the kitchen until accepted
+          // (acceptOrder() generates the tickets then).
+          // A scheduled order also waits: releaseDueScheduledOrders() sends it to
+          // the kitchen shortly before its time.
+          if (
+            acceptance !== 'PENDING' &&
+            !this.isDeferred(scheduledFor) &&
+            !options.historical
+          ) {
+            await this.generateKots(tx, created.id, branchId, created.items);
+          }
+
+          return created;
         });
+        break;
+      } catch (err) {
+        if (!this.isOrderNumberClash(err) || attempt === 14) throw err;
       }
-
-      // A pending online order must not reach the kitchen until accepted
-      // (acceptOrder() generates the tickets then).
-      // A scheduled order also waits: releaseDueScheduledOrders() sends it to
-      // the kitchen shortly before its time.
-      if (
-        acceptance !== 'PENDING' &&
-        !this.isDeferred(scheduledFor) &&
-        !options.historical
-      ) {
-        await this.generateKots(tx, created.id, branchId, created.items);
-      }
-
-      return created;
-    });
+    }
+    if (!order) {
+      throw new ConflictException('Could not allocate an order number');
+    }
 
     if (options.historical) return this.getOrder(branchId, order.id);
 
@@ -2216,16 +2231,13 @@ export class OrdersService {
 
   // Next number for today: highest existing sequence + 1, not a row count. A
   // count collides with an existing number as soon as any earlier order of the
-  // day has been deleted (orders.delete), and that surfaced as a 409 on the
-  // unique (branchId, orderNumber) index. The advisory lock keeps concurrent
-  // creates on the same branch from reading that max at the same time.
+  // day has been deleted (orders.delete). Concurrent creates can still read
+  // the same max; createOrder retries when the unique index rejects that.
   private async nextOrderNumber(
     branchId: string,
     tx: Prisma.TransactionClient,
   ): Promise<string> {
     const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const lockKey = `order-number:${branchId}:${datePart}`;
-    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`;
     const latest = await tx.order.findFirst({
       where: { branchId, orderNumber: { startsWith: `${datePart}-` } },
       orderBy: { orderNumber: 'desc' },
@@ -2234,6 +2246,20 @@ export class OrdersService {
     const last = latest ? Number(latest.orderNumber.split('-')[1]) : 0;
     const next = (Number.isFinite(last) ? last : 0) + 1;
     return `${datePart}-${String(next).padStart(4, '0')}`;
+  }
+
+  private isOrderNumberClash(err: unknown): boolean {
+    if (
+      !(err instanceof Prisma.PrismaClientKnownRequestError) ||
+      err.code !== 'P2002'
+    ) {
+      return false;
+    }
+    const target = err.meta?.target;
+    const fields = Array.isArray(target)
+      ? target.map(String)
+      : [String(target ?? '')];
+    return fields.some((field) => field.includes('orderNumber'));
   }
 
   /**

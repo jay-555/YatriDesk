@@ -47,7 +47,9 @@ export class PrismaExceptionFilter implements ExceptionFilter {
           );
         default:
           return new InternalServerErrorException(
-            'Something went wrong. Please try again.',
+            process.env.NODE_ENV === 'production'
+              ? 'Something went wrong. Please try again.'
+              : `Something went wrong. Please try again. (${exception.code})`,
           );
       }
     }
