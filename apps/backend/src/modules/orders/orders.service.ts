@@ -2257,8 +2257,10 @@ export class OrdersService {
     }
     const target = err.meta?.target;
     const fields = Array.isArray(target)
-      ? target.map(String)
-      : [String(target ?? '')];
+      ? target.filter((field): field is string => typeof field === 'string')
+      : typeof target === 'string'
+        ? [target]
+        : [];
     return fields.some((field) => field.includes('orderNumber'));
   }
 
