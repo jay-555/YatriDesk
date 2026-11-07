@@ -8,6 +8,7 @@ import type {
   CreateReservationDto,
   ReservationStatusDto,
 } from '@yatrideesk/types';
+import { BranchHoursService } from '../../common/services/branch-hours.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RealtimeGateway } from '../../realtime/realtime.gateway';
@@ -30,6 +31,7 @@ export class ReservationsService {
     private readonly realtime: RealtimeGateway,
     private readonly notifications: NotificationsService,
     private readonly webhooks: WebhooksService,
+    private readonly hours: BranchHoursService,
   ) {}
 
   list(branchId: string, date?: string) {
@@ -67,6 +69,7 @@ export class ReservationsService {
     }
 
     if (options.fromWebsite) {
+      await this.hours.assertOpen(branchId, dto.reservedAt);
       await this.assertWithinOnlineBookingCapacity(branchId, dto.guestCount);
     }
 

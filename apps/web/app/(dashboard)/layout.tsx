@@ -37,7 +37,10 @@ export default function DashboardGroupLayout({ children }: { children: React.Rea
     if (!isLoading && isError) {
       router.replace("/login");
     }
-  }, [isLoading, isError, router]);
+    if (!isLoading && data?.user.mustChangePassword) {
+      router.replace("/change-password");
+    }
+  }, [isLoading, isError, data?.user.mustChangePassword, router]);
 
   // Direct URL to a page the role may not use (e.g. a waiter opening /dashboard
   // after login): send them to their first permitted screen.
@@ -49,7 +52,7 @@ export default function DashboardGroupLayout({ children }: { children: React.Rea
     return <div className="flex min-h-screen items-center justify-center bg-background" />;
   }
 
-  if (isError || !data) {
+  if (isError || !data || data.user.mustChangePassword) {
     return null;
   }
 

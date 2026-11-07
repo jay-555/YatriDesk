@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { CartItemDto } from '@yatrideesk/types';
+import { BranchHoursService } from '../../common/services/branch-hours.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RealtimeGateway } from '../../realtime/realtime.gateway';
@@ -12,6 +13,7 @@ export class PublicMenuService {
     private readonly ordersService: OrdersService,
     private readonly notifications: NotificationsService,
     private readonly realtime: RealtimeGateway,
+    private readonly hours: BranchHoursService,
   ) {}
 
   private async resolveTable(qrToken: string) {
@@ -30,6 +32,7 @@ export class PublicMenuService {
     return {
       branchName: branch.name,
       tableName: table.name ?? `Table ${table.number}`,
+      orderingOpen: await this.hours.isOpen(branch.id),
       categories,
     };
   }

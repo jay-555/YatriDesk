@@ -50,6 +50,8 @@ import {
 } from '../../common/online-price';
 import { ReferralsService } from '../referrals/referrals.service';
 import { VerifactuService } from '../verifactu/verifactu.service';
+import { BranchHoursService } from '../../common/services/branch-hours.service';
+import { assignIndiaInvoice, isGstin } from './invoice-number';
 
 const KOT_FORWARD_STATUSES = [
   'ACCEPTED',
@@ -73,6 +75,7 @@ export class OrdersService {
     private readonly webhooks: WebhooksService,
     private readonly verifactu: VerifactuService,
     private readonly referrals: ReferralsService,
+    private readonly hours: BranchHoursService,
   ) {}
 
   async listOpen(branchId: string, tableId?: string) {
@@ -120,7 +123,7 @@ export class OrdersService {
       include: {
         table: true,
         customer: true,
-        items: { include: { modifiers: true } },
+        items: { include: { modifiers: true, menuItem: { select: { hsnCode: true } } } },
         payments: true,
         branch: { include: { restaurant: true } },
       },
@@ -361,6 +364,10 @@ export class OrdersService {
       }
     }
 
+    if (channel === 'ONLINE') {
+      await this.hours.assertOpen(branchId, scheduledFor ?? new Date());
+    }
+
     const orderNumber = await this.nextOrderNumber(branchId);
 
     const order = await this.prisma.$transaction(async (tx) => {
@@ -517,6 +524,7 @@ export class OrdersService {
       include: { items: true, payments: { select: { id: true } } },
     });
     if (!order) throw new NotFoundException('Order not found');
+    if (options.websiteOnly) await this.hours.assertOpen(branchId);
     this.assertNoPayments(order);
     await this.validateModifierSelections(
       branchId,
@@ -772,6 +780,13 @@ export class OrdersService {
         `Only finished transactions can be deleted — ${live
           .map((o) => `#${o.orderNumber}`)
           .join(', ')} still in progress`,
+      );
+    }
+
+    const taxed = orders.filter((o) => o.invoiceNumber);
+    if (taxed.length > 0) {
+      throw new BadRequestException(
+        'Sales with a tax invoice cannot be deleted. Refund the sale instead.',
       );
     }
 
@@ -1528,6 +1543,9 @@ export class OrdersService {
         'This order has not been accepted yet - accept it before taking payment',
       );
     }
+    if (dto.customerGstin && !isGstin(dto.customerGstin)) {
+      throw new BadRequestException('Enter a valid GSTIN');
+    }
 
     const branch = await this.prisma.branch.findUniqueOrThrow({
       where: { id: branchId },
@@ -1699,6 +1717,12 @@ export class OrdersService {
               loyaltyDiscountAmount,
               tipAmount: bill.tipAmount,
               totalAmount: bill.totalDue,
+              ...(dto.customerGstin
+                ? { customerGstin: dto.customerGstin.trim().toUpperCase() }
+                : {}),
+              ...(dto.customerLegalName
+                ? { customerLegalName: dto.customerLegalName.trim() }
+                : {}),
             };
 
         if (!settlement.fullyPaid) {
@@ -1776,6 +1800,7 @@ export class OrdersService {
             payments: { create: paymentRows },
           },
         });
+        await assignIndiaInvoice(tx, orderId);
         // Spain VERI*FACTU: the sale's fiscal record is written in this same transaction, so a sale
         // is never paid without it (and a failure to produce it rolls the payment back).
         await this.verifactu.recordPaidOrder(tx, orderId);

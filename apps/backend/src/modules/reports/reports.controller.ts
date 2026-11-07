@@ -31,6 +31,23 @@ export class ReportsController {
     return this.reports.catalog(u.permissions);
   }
 
+  @Auth('reports.access', 'data.export')
+  @Get('gst/workbook')
+  async gstWorkbook(
+    @CurrentUser() u: SessionUser,
+    @Query('branchId') branchId: string,
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @Res() res: Response,
+  ) {
+    assertCanViewReport(u.permissions, 'gst-b2c');
+    await this.branchAccess.assertAccess(u.restaurantId, branchId);
+    const buf = await this.reports.gstWorkbook(branchId, from, to);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="gstr1_${from}_${to}.xlsx"`);
+    res.send(buf);
+  }
+
   @Auth('reports.access')
   @Get(':key')
   async run(

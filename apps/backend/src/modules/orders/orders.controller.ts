@@ -133,6 +133,9 @@ function toEscposOrder(
     loyaltyPointsRedeemed: order.loyaltyPointsRedeemed,
     loyaltyDiscountAmount: Number(order.loyaltyDiscountAmount),
     totalAmount: Number(order.totalAmount),
+    invoiceNumber: order.invoiceNumber,
+    customerGstin: order.customerGstin,
+    customerLegalName: order.customerLegalName,
     ...overrides,
     items: order.items.map((item) => ({
       nameSnapshot: item.nameSnapshot,
@@ -140,6 +143,7 @@ function toEscposOrder(
       unitPriceSnapshot: Number(item.unitPriceSnapshot),
       lineTotal: Number(item.lineTotal),
       taxRateSnapshot: Number(item.taxRateSnapshot),
+      hsnCode: item.menuItem?.hsnCode ?? null,
       modifiers: item.modifiers.map((m) => ({
         nameSnapshot: m.nameSnapshot,
         priceAdjSnapshot: Number(m.priceAdjSnapshot),
@@ -480,6 +484,8 @@ export class OrdersController {
         taxMode: order.branch.taxMode,
         taxLabel: order.branch.taxLabel,
         taxId: order.branch.taxId,
+        fssaiNumber: order.branch.fssaiNumber,
+        gstScheme: order.branch.gstScheme,
       },
       order: {
         ...toEscposOrder(order, overrides),
@@ -670,6 +676,8 @@ export class OrdersController {
         taxMode: order.branch.taxMode,
         taxLabel: order.branch.taxLabel,
         taxId: order.branch.taxId,
+        fssaiNumber: order.branch.fssaiNumber,
+        gstScheme: order.branch.gstScheme,
       },
       order: {
         ...toEscposOrder(order, overrides),

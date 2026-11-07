@@ -40,6 +40,7 @@ export const menuItemSchema = z.object({
   // Set to enable the Half / Full / Custom portion picker; `price` is the full portion.
   halfPrice: z.number().nonnegative().nullable().optional(),
   taxRatePercent: z.coerce.number().min(0).max(100).default(0),
+  hsnCode: z.string().trim().regex(/^\d{4,8}$/).optional().or(z.literal("")),
   costPrice: z.coerce.number().nonnegative().optional(),
   prepTimeMinutes: z.number().int().nonnegative().optional(),
   calories: z.number().int().nonnegative().optional(),

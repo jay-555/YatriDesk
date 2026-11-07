@@ -52,6 +52,7 @@ export function EditItemDialog({
   const [price, setPrice] = useState(item.price);
   const [halfPrice, setHalfPrice] = useState(item.halfPrice ?? "");
   const [taxRatePercent, setTaxRatePercent] = useState(item.taxRatePercent);
+  const [hsnCode, setHsnCode] = useState(item.hsnCode ?? "");
   const [isVeg, setIsVeg] = useState(item.isVeg);
   const [imageUrl, setImageUrl] = useState<string | undefined>(item.imageUrl ?? undefined);
   const [imagePreview, setImagePreview] = useState<string | undefined>(item.imageUrl ?? undefined);
@@ -94,6 +95,7 @@ export function EditItemDialog({
           price: Number(price),
           halfPrice: halfPrice.trim() === "" ? null : Number(halfPrice),
           taxRatePercent: Number(taxRatePercent),
+          hsnCode: hsnCode.trim(),
           isVeg,
           imageUrl,
         },
@@ -213,6 +215,16 @@ export function EditItemDialog({
                 required
               />
             </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="edit-hsn">HSN / SAC</Label>
+            <Input
+              id="edit-hsn"
+              value={hsnCode}
+              onChange={(e) => setHsnCode(e.target.value)}
+              placeholder="996331"
+              inputMode="numeric"
+            />
           </div>
 
           <div className="flex flex-col gap-2">

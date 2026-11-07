@@ -16,6 +16,7 @@ import { lookupGiftCard } from "@/hooks/use-gift-cards";
 import { CancelOrderDialog, useCanCancelOrders } from "@/components/orders/cancel-order-dialog";
 import { EditBillDialog } from "@/components/orders/edit-bill-dialog";
 import { hasPermission, useCurrentUser } from "@/hooks/use-auth";
+import { useFeatures } from "@/hooks/use-features";
 import {
   useBillPreview,
   useCheckoutOrder,
@@ -98,10 +99,14 @@ export function CheckoutPanel({
   const [customer, setCustomer] = useState<Customer | null>(initialCustomer);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState("");
+  const [buyerGstin, setBuyerGstin] = useState("");
+  const [buyerLegalName, setBuyerLegalName] = useState("");
   const checkout = useCheckoutOrder(branchId);
   const { note, clear: clearNote, toast } = useNoteToast();
   const canCancelRole = useCanCancelOrders();
   const { data: me } = useCurrentUser();
+  const features = useFeatures();
+  const cloud = features.data?.saasMode === true;
   const canEditRole = hasPermission(me?.user, "orders.edit");
   const canDiscount = hasPermission(me?.user, "discounts.apply");
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -254,6 +259,8 @@ export function CheckoutPanel({
         : [];
     const dto = {
       customerId: customer?.id,
+      ...(buyerGstin.trim() ? { customerGstin: buyerGstin.trim() } : {}),
+      ...(buyerLegalName.trim() ? { customerLegalName: buyerLegalName.trim() } : {}),
       ...(locked ? {} : settled),
       ...(!locked && Number(discountValue) > 0 && discountReason.trim()
         ? { discountReason: discountReason.trim() }
@@ -326,6 +333,7 @@ export function CheckoutPanel({
           >
             {phone ? "Print / Save PDF" : "Print receipt (browser)"}
           </Button>
+          {!cloud && (
           <Button
             variant="outline"
             className="h-11"
@@ -340,6 +348,7 @@ export function CheckoutPanel({
           >
             {printUsb.isPending ? "Printing…" : phone ? "Bluetooth receipt" : "Thermal receipt"}
           </Button>
+          )}
           <Button className="h-11" onClick={onDone}>New order</Button>
         </div>
       </div>
@@ -725,6 +734,19 @@ export function CheckoutPanel({
       )}
 
       <div className="mt-auto flex flex-col gap-3 border-t border-border pt-4">
+        <div className="grid grid-cols-2 gap-2">
+          <Input
+            value={buyerGstin}
+            onChange={(e) => setBuyerGstin(e.target.value.toUpperCase())}
+            placeholder="Buyer GSTIN"
+            maxLength={15}
+          />
+          <Input
+            value={buyerLegalName}
+            onChange={(e) => setBuyerLegalName(e.target.value)}
+            placeholder="Buyer legal name"
+          />
+        </div>
         <BillSummary bill={bill} giftCardApplied={giftCardApplied} pending={repricing || billQuery.isFetching} />
 
         <div className="grid grid-cols-2 gap-2">
@@ -739,6 +761,7 @@ export function CheckoutPanel({
             <Printer className="h-4 w-4" />
             {phone ? "Print / Save PDF" : "Print bill"}
           </Button>
+          {!cloud && (
           <Button
             type="button"
             variant="outline"
@@ -750,6 +773,7 @@ export function CheckoutPanel({
             <Printer className="h-4 w-4" />
             {printUsb.isPending ? "Printing…" : phone ? "Print bill (Bluetooth)" : "Print bill (thermal)"}
           </Button>
+          )}
         </div>
 
       </div>

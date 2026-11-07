@@ -89,6 +89,14 @@ export default function ReportsPage() {
             <Button variant="outline" size="sm" onClick={() => window.print()}>
               <Printer className="mr-2 h-4 w-4" /> Print
             </Button>
+            {canExport && (
+              <a
+                href={`/api/v1/reports/gst/workbook?${qs}`}
+                className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-sm hover:bg-secondary"
+              >
+                <Download className="mr-2 h-4 w-4" /> GST workbook
+              </a>
+            )}
             {canExport &&
               (["xlsx", "pdf", "csv"] as const).map((f) => (
                 <a

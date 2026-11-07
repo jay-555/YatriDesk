@@ -43,6 +43,7 @@ export interface KioskMenu {
   taxMode: "INCLUSIVE" | "EXCLUSIVE";
   taxLabel: string;
   services: { dineIn: boolean; takeaway: boolean };
+  orderingOpen?: boolean;
   categories: KioskMenuCategory[];
 }
 export interface KioskOrderResult {

@@ -11,11 +11,13 @@ import {
   DEFAULT_ROLE_PERMISSIONS,
   PERMISSIONS,
   STAFF_ROLES,
+  type ChangePasswordDto,
   type LoginDto,
   type PinLoginDto,
   type RegisterDto,
   type SessionUser,
 } from '@yatrideesk/types';
+import { isSaasMode, withoutInstancePermissions } from '../common/saas-mode';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { TwoFactorService } from './two-factor.service';
@@ -40,6 +42,7 @@ export class AuthService {
     roleId: string;
     role: { name: string; permissions: { permission: { key: string } }[] };
     permissionOverrides?: PermissionSource['permissionOverrides'];
+    mustChangePassword?: boolean;
   }): SessionUser {
     return {
       id: user.id,
@@ -48,7 +51,35 @@ export class AuthService {
       roleId: user.roleId,
       roleName: user.role.name,
       permissions: effectivePermissions(user),
+      mustChangePassword: user.mustChangePassword ?? false,
     };
+  }
+
+  private async assertRestaurantCanSignIn(restaurantId: string) {
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+      select: { status: true },
+    });
+    if (restaurant?.status === 'SUSPENDED') {
+      throw new ForbiddenException('This restaurant is suspended');
+    }
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: permissionInclude,
+    });
+    if (!user || !(await bcrypt.compare(dto.currentPassword, user.passwordHash))) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+    const passwordHash = await bcrypt.hash(dto.newPassword, 12);
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash, mustChangePassword: false },
+      include: permissionInclude,
+    });
+    return this.issueSession(updated);
   }
 
   /**
@@ -141,7 +172,7 @@ export class AuthService {
     if (user.twoFactorEnabled) {
       await this.twoFactor.verifyLogin(user, dto.totp);
     }
-
+    await this.assertRestaurantCanSignIn(user.restaurantId);
     return this.issueSession(user);
   }
 
@@ -166,6 +197,11 @@ export class AuthService {
     // the network creating another would get an OWNER role - which carries the
     // instance-wide backup, update and sync permissions - so it stays closed
     // unless the host opts in (ALLOW_PUBLIC_SIGNUP=true) to run several tenants.
+    if (isSaasMode()) {
+      throw new ForbiddenException(
+        'Sign-up is closed. A platform administrator creates restaurant accounts.',
+      );
+    }
     if (
       process.env.ALLOW_PUBLIC_SIGNUP !== 'true' &&
       (await this.hasAnyRestaurant())
@@ -216,7 +252,7 @@ export class AuthService {
         });
         if (roleName === 'OWNER') ownerRoleId = role.id;
 
-        const grantedKeys = DEFAULT_ROLE_PERMISSIONS[roleName];
+        const grantedKeys = withoutInstancePermissions(DEFAULT_ROLE_PERMISSIONS[roleName]);
         await tx.rolePermission.createMany({
           data: grantedKeys
             .map((key) => permissionByKey.get(key))
@@ -276,7 +312,7 @@ export class AuthService {
     if (!valid) {
       throw new UnauthorizedException('Incorrect PIN');
     }
-
+    await this.assertRestaurantCanSignIn(user.restaurantId);
     return this.issueSession(user);
   }
 

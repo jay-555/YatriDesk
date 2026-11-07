@@ -86,8 +86,12 @@ export interface EscposReceiptOrder {
     unitPriceSnapshot: number;
     lineTotal: number;
     taxRateSnapshot: number;
+    hsnCode?: string | null;
     modifiers: { nameSnapshot: string; priceAdjSnapshot: number }[];
   }[];
+  invoiceNumber?: string | null;
+  customerGstin?: string | null;
+  customerLegalName?: string | null;
   payments: {
     method: string;
     amount: number;
@@ -131,6 +135,8 @@ export function buildReceiptEscPosJob({
     taxMode: TaxMode;
     taxLabel: string | null;
     taxId: string | null;
+    fssaiNumber?: string | null;
+    gstScheme?: 'REGULAR' | 'COMPOSITION' | null;
   };
   currency: string;
   order: EscposReceiptOrder;
@@ -145,6 +151,8 @@ export function buildReceiptEscPosJob({
     branch.taxId ||
     (branch.taxRegime === 'INDIA_GST' ? branch.gstNumber : null);
   const taxIdLabel = resolveTaxIdLabel(branch.taxRegime);
+  const india = branch.taxRegime === 'INDIA_GST';
+  const billOfSupply = india && branch.gstScheme === 'COMPOSITION';
 
   w.text(restaurantName, { align: 'center', bold: true, size: 'big' });
   w.text(branch.name, { align: 'center' });
@@ -153,9 +161,16 @@ export function buildReceiptEscPosJob({
   if (taxIdValue) {
     w.text(`${taxIdLabel}: ${taxIdValue}`, { align: 'center' });
   }
+  if (branch.fssaiNumber) w.text(`FSSAI: ${branch.fssaiNumber}`, { align: 'center' });
+  if (billOfSupply) w.text('BILL OF SUPPLY', { align: 'center', bold: true });
+  else if (order.invoiceNumber) w.text('TAX INVOICE', { align: 'center', bold: true });
   w.rule();
   w.text(stamp(order.createdAt, { timeZone, locale }));
   w.text(`Order: #${order.orderNumber} - ${order.type.replace('_', ' ')}`);
+  if (order.invoiceNumber) w.text(`Invoice: ${order.invoiceNumber}`);
+  if (order.customerGstin) {
+    w.text(`Buyer GSTIN: ${order.customerGstin}${order.customerLegalName ? ` ${order.customerLegalName}` : ''}`);
+  }
   if (order.table) w.text(`Table: ${order.table.label}`);
   if (order.customer) {
     w.text(
@@ -172,9 +187,21 @@ export function buildReceiptEscPosJob({
       money(item.lineTotal),
       { indent: 2 },
     );
-    if (Number(item.taxRateSnapshot) > 0) {
+    if (Number(item.taxRateSnapshot) > 0 && !billOfSupply) {
       w.text(`  ${taxLabel} @ ${item.taxRateSnapshot}%`);
     }
+  }
+  if (india) {
+    const groups = new Map<string, { qty: number; value: number }>();
+    for (const item of order.items) {
+      const hsn = item.hsnCode || '996331';
+      const row = groups.get(hsn) ?? { qty: 0, value: 0 };
+      row.qty += item.quantity;
+      row.value += item.lineTotal;
+      groups.set(hsn, row);
+    }
+    w.text('HSN / SAC');
+    for (const [hsn, row] of groups) w.text(`${hsn}  ${row.qty}  ${money(row.value)}`);
   }
   w.rule();
 
@@ -186,7 +213,7 @@ export function buildReceiptEscPosJob({
         `-${money(order.discountAmount)}`,
       );
     }
-    if (order.taxAmount > 0) w.row(taxLabel, money(order.taxAmount));
+    if (order.taxAmount > 0 && !billOfSupply) w.row(taxLabel, money(order.taxAmount));
   } else {
     w.row('Subtotal', money(order.subtotal));
     if (order.discountAmount > 0) {
@@ -198,7 +225,9 @@ export function buildReceiptEscPosJob({
     if (order.taxAmount > 0) {
       // Prices are tax-inclusive - this is a breakup of tax already inside
       // the total above, not an additional charge (see ARCHITECTURE.md).
-      if (TAX_REGIME_PRESETS[branch.taxRegime].splitCgstSgst) {
+      if (billOfSupply) {
+        // Composition scheme prints a bill of supply with no tax breakup.
+      } else if (TAX_REGIME_PRESETS[branch.taxRegime].splitCgstSgst) {
         const half =
           Math.round((order.taxAmount / 2 + Number.EPSILON) * 100) / 100;
         w.row('CGST (incl.)', money(half));

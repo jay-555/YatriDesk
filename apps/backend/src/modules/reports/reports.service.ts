@@ -7,8 +7,10 @@ import { permissionSatisfied } from '@yatrideesk/types';
 import { BranchTimeService } from '../../common/services/branch-time.service';
 import { localDate, localMinuteAndDay, zonedRange } from '../../common/time';
 import { PrismaService } from '../../prisma/prisma.service';
+import ExcelJS from 'exceljs';
 import { AccountingService } from '../accounting/accounting.service';
 import type { CsvValue } from './csv';
+import { lineFromInclusive, summarizeGst, type GstSheets } from './gst-export';
 
 export interface ReportResult {
   key: string;
@@ -26,6 +28,10 @@ export const REPORT_CATALOG = [
   { key: 'payment-methods', title: 'Payment methods', group: 'Sales' },
   { key: 'discounts', title: 'Discounts & coupons', group: 'Sales' },
   { key: 'tax', title: 'Tax (GST) summary', group: 'Tax' },
+  { key: 'gst-b2c', title: 'GSTR-1 B2C', group: 'Tax' },
+  { key: 'gst-b2b', title: 'GSTR-1 B2B', group: 'Tax' },
+  { key: 'gst-hsn', title: 'GSTR-1 HSN', group: 'Tax' },
+  { key: 'gst-docs', title: 'GSTR-1 documents issued', group: 'Tax' },
   { key: 'peak-hours', title: 'Peak hours', group: 'Analytics' },
   { key: 'food-cost', title: 'Food cost & margins', group: 'Analytics' },
   { key: 'customers', title: 'Top customers', group: 'Customers' },
@@ -54,6 +60,10 @@ export const SALES_REPORT_KEYS: ReadonlySet<string> = new Set([
   'payment-methods',
   'discounts',
   'tax',
+  'gst-b2c',
+  'gst-b2b',
+  'gst-hsn',
+  'gst-docs',
   'peak-hours',
   'food-cost',
   'customers',
@@ -655,6 +665,92 @@ export class ReportsService {
           ],
         );
       }
+
+      case 'gst-b2c':
+      case 'gst-b2b':
+      case 'gst-hsn':
+      case 'gst-docs': {
+        const sheets = await this.gstSheets(branchId, range);
+        if (key === 'gst-b2c') {
+          return out(
+            ['Rate %', 'Invoices', 'Taxable', 'CGST', 'SGST', 'Tax', 'Value'],
+            sheets.b2c.map((r) => [r.rate, r.invoices, r.taxable, r.cgst, r.sgst, r.tax, r.value]),
+          );
+        }
+        if (key === 'gst-b2b') {
+          return out(
+            ['Buyer GSTIN', 'Legal name', 'Invoice', 'Date', 'Rate %', 'Taxable', 'CGST', 'SGST', 'Value'],
+            sheets.b2b.map((r) => [r.gstin, r.legalName, r.invoiceNumber, r.date, r.rate, r.taxable, r.cgst, r.sgst, r.value]),
+          );
+        }
+        if (key === 'gst-hsn') {
+          return out(
+            ['HSN/SAC', 'Rate %', 'Qty', 'Taxable', 'CGST', 'SGST', 'Value'],
+            sheets.hsn.map((r) => [r.hsn, r.rate, r.quantity, r.taxable, r.cgst, r.sgst, r.value]),
+          );
+        }
+        return out(
+          ['Series', 'From', 'To', 'Count'],
+          sheets.docs.map((r) => [r.series, r.from, r.to, r.count]),
+        );
+      }
     }
+  }
+
+  async gstWorkbook(branchId: string, from: string, to: string): Promise<Buffer> {
+    const tz = await this.time.tzForBranch(branchId);
+    const sheets = await this.gstSheets(branchId, zonedRange(from, to, tz));
+    const book = new ExcelJS.Workbook();
+    const add = (name: string, columns: string[], rows: (string | number)[][]) => {
+      const sheet = book.addWorksheet(name);
+      sheet.addRow(columns);
+      for (const row of rows) sheet.addRow(row);
+    };
+    add(
+      'gst-b2c',
+      ['Rate', 'Invoices', 'Taxable', 'CGST', 'SGST', 'Tax', 'Value'],
+      sheets.b2c.map((r) => [r.rate, r.invoices, r.taxable, r.cgst, r.sgst, r.tax, r.value]),
+    );
+    add(
+      'gst-b2b',
+      ['Buyer GSTIN', 'Legal name', 'Invoice', 'Date', 'Rate', 'Taxable', 'CGST', 'SGST', 'Value'],
+      sheets.b2b.map((r) => [r.gstin, r.legalName, r.invoiceNumber, r.date, r.rate, r.taxable, r.cgst, r.sgst, r.value]),
+    );
+    add(
+      'gst-hsn',
+      ['HSN/SAC', 'Rate', 'Qty', 'Taxable', 'CGST', 'SGST', 'Value'],
+      sheets.hsn.map((r) => [r.hsn, r.rate, r.quantity, r.taxable, r.cgst, r.sgst, r.value]),
+    );
+    add(
+      'gst-docs',
+      ['Series', 'From', 'To', 'Count'],
+      sheets.docs.map((r) => [r.series, r.from, r.to, r.count]),
+    );
+    const buf = await book.xlsx.writeBuffer();
+    return Buffer.from(buf);
+  }
+
+  async gstSheets(branchId: string, range: { gte: Date; lt: Date }): Promise<GstSheets> {
+    const orders = await this.prisma.order.findMany({
+      where: { branchId, status: 'PAID', invoiceNumber: { not: null }, invoicedAt: range },
+      include: { items: { include: { menuItem: { select: { hsnCode: true } } } } },
+    });
+    return summarizeGst(
+      orders.map((order) => ({
+        invoiceNumber: order.invoiceNumber,
+        invoicedAt: order.invoicedAt,
+        customerGstin: order.customerGstin,
+        customerLegalName: order.customerLegalName,
+        totalAmount: Number(order.totalAmount),
+        lines: order.items.map((item) =>
+          lineFromInclusive(
+            Number(item.lineTotal),
+            Number(item.taxRateSnapshot),
+            item.quantity,
+            item.menuItem?.hsnCode,
+          ),
+        ),
+      })),
+    );
   }
 }

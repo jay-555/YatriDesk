@@ -10,13 +10,14 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../common/decorators/auth.decorator';
+import { NotInSaasGuard } from '../common/guards/not-in-saas.guard';
 import { SyncKeyGuard } from './sync-key.guard';
 import { SyncChange, SyncService } from './sync.service';
 
 /** Called by other installs (key-authenticated). */
 @ApiTags('sync')
 @Controller('v1/sync-peer')
-@UseGuards(SyncKeyGuard)
+@UseGuards(NotInSaasGuard, SyncKeyGuard)
 export class SyncPeerController {
   constructor(private readonly sync: SyncService) {}
 
@@ -47,6 +48,7 @@ export class SyncPeerController {
 /** Used by the settings page on this install. */
 @ApiTags('sync')
 @Controller('v1/sync')
+@UseGuards(NotInSaasGuard)
 export class SyncController {
   constructor(private readonly sync: SyncService) {}
 

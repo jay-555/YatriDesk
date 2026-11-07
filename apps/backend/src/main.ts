@@ -122,7 +122,12 @@ async function bootstrap() {
     app.set('trust proxy', hops);
   }
   // Same 100kb as Express's default, stated so it is a decision, not an accident.
-  app.useBodyParser('json', { limit: process.env.BODY_LIMIT ?? '100kb' });
+  app.useBodyParser('json', {
+    limit: process.env.BODY_LIMIT ?? '100kb',
+    verify: (req, _res, buf) => {
+      (req as { rawBody?: Buffer }).rawBody = Buffer.from(buf);
+    },
+  });
   app.use(cookieParser());
   // Browsers only ever talk to the web container (same origin, /api is proxied),
   // and a website's backend calls the Integration API server-to-server, so the
@@ -157,6 +162,17 @@ async function bootstrap() {
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);
+  }
+
+  const reporter = process.env.ERROR_REPORTER_URL;
+  if (reporter) {
+    process.on('unhandledRejection', (reason) => {
+      void fetch(reporter, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ message: String(reason) }),
+      }).catch(() => undefined);
+    });
   }
 
   const port = process.env.PORT ?? 4000;

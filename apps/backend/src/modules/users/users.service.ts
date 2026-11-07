@@ -13,6 +13,7 @@ import type {
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { AuditService } from '../../audit/audit.service';
+import { isSaasMode } from '../../common/saas-mode';
 import { PrismaService } from '../../prisma/prisma.service';
 
 const SELECT = {
@@ -60,6 +61,15 @@ export class UsersService {
   }
 
   async create(restaurantId: string, actorId: string, dto: CreateStaffDto) {
+    if (isSaasMode()) {
+      const restaurant = await this.prisma.restaurant.findUnique({
+        where: { id: restaurantId },
+        select: { maxUsers: true, _count: { select: { users: true } } },
+      });
+      if (restaurant && restaurant._count.users >= restaurant.maxUsers) {
+        throw new ConflictException('This plan has no room for another staff account');
+      }
+    }
     await this.assertRoleInRestaurant(restaurantId, dto.roleId);
     await this.assertBranchesInRestaurant(restaurantId, dto.branchIds);
     await this.assertDepartmentInRestaurant(restaurantId, dto.departmentId);

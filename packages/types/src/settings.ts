@@ -35,6 +35,13 @@ export const restaurantSettingsSchema = z.object({
   onlinePriceAdjustValue: z.coerce.number().min(-100000).max(100000).optional(),
   maxManualDiscountPercent: z.coerce.number().min(0).max(100).optional(),
   requireDiscountReason: z.boolean().optional(),
+  phone: z.string().trim().max(20).optional().nullable(),
+  email: z.string().trim().email().optional().nullable().or(z.literal("")),
+  address: z.string().trim().max(240).optional().nullable(),
+  city: z.string().trim().max(80).optional().nullable(),
+  state: z.string().trim().max(80).optional().nullable(),
+  pincode: z.string().trim().max(10).optional().nullable(),
+  pan: z.string().trim().max(10).optional().nullable(),
 });
 export type RestaurantSettingsDto = z.infer<typeof restaurantSettingsSchema>;
 
@@ -45,6 +52,16 @@ export const branchSettingsSchema = z.object({
   address: z.string().optional(),
   phone: z.string().optional(),
   gstNumber: z.string().optional(),
+  fssaiNumber: z.string().trim().regex(/^\d{14}$/).optional().nullable().or(z.literal("")),
+  gstScheme: z.enum(["REGULAR", "COMPOSITION"]).optional(),
+  invoicePrefix: z.string().trim().regex(/^[A-Z0-9]{1,4}$/).optional().nullable(),
+  temporarilyClosed: z.boolean().optional(),
+  fssaiExpiresOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   // Multi-region tax config — see tax.ts for the regime presets this
   // pairs with (label, default mode, CGST/SGST split).
   country: z.string().length(2).optional(),

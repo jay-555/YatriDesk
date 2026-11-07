@@ -45,6 +45,7 @@ export function AddItemDialog({
   const [price, setPrice] = useState("");
   const [halfPrice, setHalfPrice] = useState("");
   const [taxRatePercent, setTaxRatePercent] = useState("5");
+  const [hsnCode, setHsnCode] = useState("");
   const [isVeg, setIsVeg] = useState(true);
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
@@ -96,6 +97,7 @@ export function AddItemDialog({
         price: Number(price),
         halfPrice: halfPrice.trim() === "" ? undefined : Number(halfPrice),
         taxRatePercent: Number(taxRatePercent),
+        hsnCode: hsnCode.trim(),
         isVeg,
         isVegan: false,
         isJain: false,
@@ -236,6 +238,10 @@ export function AddItemDialog({
                 required
               />
             </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="add-hsn">HSN / SAC</Label>
+            <Input id="add-hsn" value={hsnCode} onChange={(e) => setHsnCode(e.target.value)} placeholder="996331" inputMode="numeric" />
           </div>
 
           <div className="flex flex-col gap-2">

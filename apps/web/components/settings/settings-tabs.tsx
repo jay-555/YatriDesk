@@ -6,6 +6,7 @@ import { hasPermission, useCurrentUser } from "@/hooks/use-auth";
 import { useNavBadges } from "@/hooks/use-nav-badges";
 import { useBranch } from "@/hooks/use-branch";
 import { useSettings } from "@/hooks/use-settings";
+import { useFeatures } from "@/hooks/use-features";
 import { cn } from "@/lib/utils";
 import { NavDot } from "@/components/layout/nav-dot";
 
@@ -20,6 +21,9 @@ interface SettingsTab {
 
 const TABS: SettingsTab[] = [
   { label: "General", href: "/settings" },
+  { label: "Outlet", href: "/settings/outlet", permission: "settings.manage" },
+  { label: "Billing", href: "/settings/billing", permission: "settings.manage" },
+  { label: "Privacy", href: "/settings/privacy" },
   { label: "Staff", href: "/settings/staff", permission: "users.manage" },
   { label: "Roles", href: "/settings/roles", permission: "roles.manage" },
   { label: "Audit Log", href: "/settings/audit-log", permission: "audit_log.view" },
@@ -40,9 +44,14 @@ export function SettingsTabs() {
   const badges = useNavBadges();
   const { branchId } = useBranch();
   const branchCountry = useSettings(branchId).data?.branch.country;
+  const saas = useFeatures().data?.saasMode === true;
+  const hostedOff = saas
+    ? new Set(["/settings/backup", "/settings/updates", "/settings/sync"])
+    : new Set<string>();
 
   const visibleTabs = TABS.filter(
     (tab) =>
+      !hostedOff.has(tab.href) &&
       (!tab.permission || hasPermission(user, tab.permission)) &&
       (!tab.country || branchCountry === tab.country),
   );

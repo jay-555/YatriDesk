@@ -34,8 +34,13 @@ export default function LoginPage() {
     setError(null);
     login.mutate(dto, {
       onSuccess: (data) => {
+        const session = data as { user?: { mustChangePassword?: boolean; roleName?: string; permissions?: string[] } };
+        if (session.user?.mustChangePassword) {
+          router.push("/change-password");
+          return;
+        }
         // A delivery rider has no back-office screens: open their deliveries.
-        const user = (data as { user?: { roleName?: string; permissions?: string[] } }).user;
+        const user = session.user;
         const rider = user?.roleName === "DELIVERY_STAFF" && user.permissions?.includes("delivery.rider");
         router.push(rider ? "/my-deliveries" : "/dashboard");
       },

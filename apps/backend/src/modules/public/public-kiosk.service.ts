@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { resolveTaxLabel, type KioskOrderDto } from '@yatrideesk/types';
 import { Prisma } from '@prisma/client';
+import { BranchHoursService } from '../../common/services/branch-hours.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OrdersService } from '../orders/orders.service';
 import { PublicMenuService } from './public-menu.service';
@@ -26,6 +27,7 @@ export class PublicKioskService {
     private readonly prisma: PrismaService,
     private readonly ordersService: OrdersService,
     private readonly publicMenu: PublicMenuService,
+    private readonly hours: BranchHoursService,
   ) {}
 
   private async resolveBranch(kioskToken: string) {
@@ -58,6 +60,7 @@ export class PublicKioskService {
         dineIn: branch.kioskDineInEnabled,
         takeaway: branch.kioskTakeawayEnabled,
       },
+      orderingOpen: await this.hours.isOpen(branch.id),
       // Empty categories are not worth a button on a touchscreen.
       categories: categories.filter((c) => c.items.length > 0),
     };

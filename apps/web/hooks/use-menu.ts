@@ -43,6 +43,7 @@ export interface MenuItem {
   price: string;
   halfPrice: string | null;
   taxRatePercent: string;
+  hsnCode?: string | null;
   isVeg: boolean;
   isActive: boolean;
   isCombo: boolean;

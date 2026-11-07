@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useNavBadges } from "@/hooks/use-nav-badges";
 import { NavDot } from "./nav-dot";
 import { NAV_ITEMS } from "./nav-items";
+import { useFeatures } from "@/hooks/use-features";
 
 export function SidebarNav({
   user,
@@ -20,10 +21,15 @@ export function SidebarNav({
   const pathname = usePathname();
   const { t } = useI18n();
   const badges = useNavBadges();
+  const features = useFeatures();
+  const saas = features.data?.saasMode === true;
+  const flags = features.data?.flags;
 
   return (
     <nav className="flex flex-col gap-1 px-3">
-      {NAV_ITEMS.filter((item) => !item.permission || hasPermission(user, item.permission)).map(
+      {NAV_ITEMS.filter((item) => !item.permission || hasPermission(user, item.permission))
+        .filter((item) => !saas || !item.featureKey || flags?.[item.featureKey] === true)
+        .map(
         (item) => {
           const isActive = pathname?.startsWith(item.href);
           const Icon = item.icon;

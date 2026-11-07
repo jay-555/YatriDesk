@@ -30,6 +30,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useBranch } from "@/hooks/use-branch";
+import { useFeatures } from "@/hooks/use-features";
 import { useNotificationMute } from "@/hooks/use-notification-mute";
 import {
   useSettings,
@@ -44,6 +45,9 @@ import { ApiError } from "@/lib/api";
 export default function SettingsPage() {
   const { branchId } = useBranch();
   const { data, isLoading } = useSettings(branchId);
+  const features = useFeatures();
+  const saas = features.data?.saasMode === true;
+  const kioskOn = !saas || features.data?.flags.kiosk === true;
 
   return (
     <div className="flex flex-col gap-6">
@@ -70,12 +74,12 @@ export default function SettingsPage() {
 
       {data && <OnlineOrdersCard key={data.branch.id} branchId={branchId} branch={data.branch} />}
 
-      {data && <KioskCard key={`kiosk-${data.branch.id}`} branchId={branchId} branch={data.branch} />}
+      {kioskOn && data && <KioskCard key={`kiosk-${data.branch.id}`} branchId={branchId} branch={data.branch} />}
 
       <NotificationSettingsCard />
 
-      <BluetoothPrinterCard />
-      <PrinterDiagnosticsCard />
+      {!saas && <BluetoothPrinterCard />}
+      {!saas && <PrinterDiagnosticsCard />}
       <MobileAppCard />
     </div>
   );

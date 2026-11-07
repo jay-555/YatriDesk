@@ -53,6 +53,7 @@ function build() {
     prisma as never,
     ordersService as never,
     publicMenu as never,
+    { isOpen: jest.fn().mockResolvedValue(true) } as never,
   );
   return { service, prisma, ordersService, publicMenu };
 }
