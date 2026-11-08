@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock, Trash2, X } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ScanOrderInput } from "@/components/orders/scan-order-input";
@@ -97,11 +98,14 @@ function OrdersView() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Orders</h1>
-        <p className="text-sm text-muted-foreground">
-          Accept new online orders and manage everything in progress
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Live orders</h1>
+          <p className="text-sm text-muted-foreground">
+            Accept new online orders and manage everything in progress
+          </p>
+        </div>
+        <Button variant="outline" render={<Link href="/pos" />}>New bill</Button>
       </div>
 
       <ScanOrderInput branchId={branchId} />

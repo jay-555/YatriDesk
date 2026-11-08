@@ -225,6 +225,9 @@ function GeneralSettingsForm({
   const [gstScheme, setGstScheme] = useState<"REGULAR" | "COMPOSITION">(branch.gstScheme ?? "REGULAR");
   const [invoicePrefix, setInvoicePrefix] = useState(branch.invoicePrefix ?? "");
   const [temporarilyClosed, setTemporarilyClosed] = useState(branch.temporarilyClosed);
+  const [posDefaultService, setPosDefaultService] = useState<"DINE_IN" | "TAKEAWAY">(
+    branch.posDefaultService === "TAKEAWAY" ? "TAKEAWAY" : "DINE_IN",
+  );
   const [hourDraft, setHourDraft] = useState<{ open: string; close: string } | null>(null);
   const [closureDate, setClosureDate] = useState("");
   const hoursQuery = useBranchHours(branchId);
@@ -335,6 +338,7 @@ function GeneralSettingsForm({
         taxId: registration || null,
         invoicePrefix: prefix || null,
         temporarilyClosed,
+        posDefaultService,
         ...(taxRegime === "INDIA_GST"
           ? {
               gstNumber: registration,
@@ -918,7 +922,28 @@ function GeneralSettingsForm({
                 <p className="text-xs text-destructive">{branchErrors.invoicePrefix}</p>
               )}
             </div>
-            <label className="flex items-start gap-2 text-sm sm:pt-7">
+            <fieldset className="flex flex-col gap-2 sm:pt-1">
+              <legend className="text-sm font-medium text-foreground">Billing starts on</legend>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="pos-default-service"
+                  checked={posDefaultService === "DINE_IN"}
+                  onChange={() => setPosDefaultService("DINE_IN")}
+                />
+                Dine-in (table grid)
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="pos-default-service"
+                  checked={posDefaultService === "TAKEAWAY"}
+                  onChange={() => setPosDefaultService("TAKEAWAY")}
+                />
+                Takeaway (menu, no table)
+              </label>
+            </fieldset>
+            <label className="flex items-start gap-2 text-sm sm:col-span-2">
               <input
                 type="checkbox"
                 className="mt-1"

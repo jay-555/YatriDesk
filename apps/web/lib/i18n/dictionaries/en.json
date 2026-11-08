@@ -1,8 +1,8 @@
 {
   "nav.dashboard": "Dashboard",
-  "nav.pos": "Point of Sale",
+  "nav.pos": "Billing",
   "nav.tables": "Tables",
-  "nav.orders": "Orders",
+  "nav.orders": "Live orders",
   "nav.reservations": "Reservations",
   "nav.menu": "Menu",
   "nav.kds": "Kitchen Display",

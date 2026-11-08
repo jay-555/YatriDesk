@@ -1,8 +1,8 @@
 {
   "nav.dashboard": "Tableau de bord",
-  "nav.pos": "Point de vente",
+  "nav.pos": "Encaissement",
   "nav.tables": "Tables",
-  "nav.orders": "Commandes",
+  "nav.orders": "Commandes en direct",
   "nav.reservations": "Réservations",
   "nav.menu": "Menu",
   "nav.kds": "Écran de cuisine",

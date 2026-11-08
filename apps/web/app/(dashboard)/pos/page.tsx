@@ -7,6 +7,9 @@ import { StatusNote, useNoteToast } from "@/components/ui/status-note";
 import { publishDisplay } from "@/lib/customer-display";
 import { BranchNotice } from "@/components/layout/branch-notice";
 import { CartPanel, type DeliveryDetails, type PosOrderType } from "@/components/pos/cart-panel";
+import { DeliveryFields } from "@/components/pos/delivery-fields";
+import { NeedsActionStrip } from "@/components/pos/needs-action-strip";
+import { ServiceTypeBar } from "@/components/pos/service-type-bar";
 import { cartLineKey, portionText, type CartLine, type Portion } from "@/components/pos/cart-line";
 import { clearDraft, switchTableDraft, type Drafts } from "@/lib/pos-drafts";
 import { CheckoutPanel } from "@/components/pos/checkout-panel";
@@ -16,6 +19,7 @@ import { PosTablePicker } from "@/components/pos/pos-table-picker";
 import { ProductGrid } from "@/components/pos/product-grid";
 import { Card } from "@/components/ui/card";
 import { useBranch } from "@/hooks/use-branch";
+import { useDisplaySettings } from "@/hooks/use-settings";
 import type { MenuItem } from "@/hooks/use-menu";
 import {
   useAddOrderItems,
@@ -43,10 +47,20 @@ function PosPageInner() {
   const floorsQuery = useFloors(branchId);
   const floors = floorsQuery.data;
   const tables = floors?.flatMap((f) => f.tables) ?? [];
-  const preselectedTableId = useSearchParams().get("tableId") ?? "";
+  const searchParams = useSearchParams();
+  const preselectedTableId = searchParams.get("tableId") ?? "";
+  const typeParam = searchParams.get("type");
+  const parsedType: PosOrderType | null =
+    typeParam === "DINE_IN" || typeParam === "TAKEAWAY" || typeParam === "DELIVERY" ? typeParam : null;
+  const display = useDisplaySettings(branchId);
+  const outletDefault: PosOrderType =
+    display.data?.branch.posDefaultService === "TAKEAWAY" ? "TAKEAWAY" : "DINE_IN";
 
   const [lines, setLines] = useState<CartLine[]>([]);
-  const [orderType, setOrderType] = useState<PosOrderType>("DINE_IN");
+  const [chosenType, setChosenType] = useState<PosOrderType | null>(
+    preselectedTableId ? "DINE_IN" : parsedType,
+  );
+  const orderType = chosenType ?? outletDefault;
   const [delivery, setDelivery] = useState<DeliveryDetails>({ address: "", pincode: "", phone: "" });
   const [scheduledFor, setScheduledFor] = useState("");
   const [tableId, setTableIdRaw] = useState(preselectedTableId);
@@ -68,7 +82,15 @@ function PosPageInner() {
   const [seenPreselected, setSeenPreselected] = useState(preselectedTableId);
   if (preselectedTableId !== seenPreselected) {
     setSeenPreselected(preselectedTableId);
-    if (preselectedTableId && !activeOrder) setTableId(preselectedTableId);
+    if (preselectedTableId && !activeOrder) {
+      setChosenType("DINE_IN");
+      setTableId(preselectedTableId);
+    }
+  }
+  const [seenType, setSeenType] = useState(typeParam ?? "");
+  if ((typeParam ?? "") !== seenType) {
+    setSeenType(typeParam ?? "");
+    if (parsedType && !preselectedTableId && !activeOrder) setChosenType(parsedType);
   }
   // Phones show the menu full-screen and the cart/checkout as an overlay; from
   // lg up both sit side by side and this flag is ignored.
@@ -233,6 +255,7 @@ function PosPageInner() {
     // The sent cart is gone; other tables' unsent drafts stay.
     setLines([]);
     setSelectedBillId(null);
+    setChosenType(null);
     setTableIdRaw("");
     setActiveCustomer(null);
     setDelivery({ address: "", pincode: "", phone: "" });
@@ -269,6 +292,14 @@ function PosPageInner() {
       </div>
 
       <BranchNotice />
+
+      {!activeOrder && <ServiceTypeBar value={orderType} onChange={setChosenType} />}
+      <NeedsActionStrip branchId={branchId} />
+      {orderType === "DELIVERY" && !activeOrder && (
+        <div className="lg:hidden">
+          <DeliveryFields delivery={delivery} onDeliveryChange={setDelivery} branchId={branchId} />
+        </div>
+      )}
 
       {showTablePicker ? (
         <Card className="flex-1 overflow-hidden p-5">
@@ -314,7 +345,7 @@ function PosPageInner() {
               <CartPanel
                 lines={lines}
                 orderType={orderType}
-                onOrderTypeChange={setOrderType}
+                onOrderTypeChange={setChosenType}
                 tables={tables}
                 tableId={tableId}
                 onTableChange={setTableId}

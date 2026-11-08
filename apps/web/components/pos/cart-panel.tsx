@@ -10,19 +10,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CartLine } from "@/components/pos/cart-line";
-import { SavedAddressPicker } from "@/components/pos/saved-address-picker";
+import { DeliveryFields, type DeliveryDetails } from "@/components/pos/delivery-fields";
+import { ServiceTypeBar, type PosOrderType } from "@/components/pos/service-type-bar";
 import type { RestaurantTable } from "@/hooks/use-tables";
 import { formatCurrency } from "@/lib/format";
 import { subtotalOf } from "@/lib/pricing-preview";
 
-export type PosOrderType = "DINE_IN" | "TAKEAWAY" | "DELIVERY";
-export interface DeliveryDetails {
-  address: string;
-  pincode: string;
-  phone: string;
-}
+export type { DeliveryDetails, PosOrderType };
 
 export function CartPanel({
   lines,
@@ -83,19 +78,9 @@ export function CartPanel({
 
   return (
     <div className="flex h-full flex-col gap-4">
-      <Tabs value={orderType} onValueChange={(v) => onOrderTypeChange(v as PosOrderType)}>
-        <TabsList className="w-full">
-          <TabsTrigger value="DINE_IN" className="flex-1">
-            Dine-in
-          </TabsTrigger>
-          <TabsTrigger value="TAKEAWAY" className="flex-1">
-            Takeaway
-          </TabsTrigger>
-          <TabsTrigger value="DELIVERY" className="flex-1">
-            Delivery
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="lg:hidden">
+        <ServiceTypeBar value={orderType} onChange={onOrderTypeChange} />
+      </div>
 
       {orderType === "DINE_IN" && (
         <Select value={tableId} onValueChange={(v) => onTableChange(v ?? "")}>
@@ -119,32 +104,7 @@ export function CartPanel({
       )}
 
       {orderType === "DELIVERY" && (
-        <div className="flex flex-col gap-2">
-          <Input
-            placeholder="Delivery address"
-            value={delivery.address}
-            onChange={(e) => onDeliveryChange({ ...delivery, address: e.target.value })}
-          />
-          <SavedAddressPicker
-            branchId={branchId}
-            phone={delivery.phone}
-            onPick={(address, pincode) => onDeliveryChange({ ...delivery, address, pincode })}
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              placeholder="Pincode"
-              inputMode="numeric"
-              value={delivery.pincode}
-              onChange={(e) => onDeliveryChange({ ...delivery, pincode: e.target.value })}
-            />
-            <Input
-              placeholder="Phone"
-              inputMode="tel"
-              value={delivery.phone}
-              onChange={(e) => onDeliveryChange({ ...delivery, phone: e.target.value })}
-            />
-          </div>
-        </div>
+        <DeliveryFields delivery={delivery} onDeliveryChange={onDeliveryChange} branchId={branchId} />
       )}
 
       {orderType !== "DINE_IN" && (
