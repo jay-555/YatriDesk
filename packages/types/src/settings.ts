@@ -72,6 +72,7 @@ export const branchSettingsSchema = z.object({
   // Online order / table-booking handling (false = staff accept manually).
   autoConfirmOrders: z.boolean().optional(),
   autoConfirmReservations: z.boolean().optional(),
+  posDefaultService: z.enum(["DINE_IN", "TAKEAWAY"]).optional(),
   // Self-service kiosk: which service-mode buttons the start screen offers.
   kioskDineInEnabled: z.boolean().optional(),
   kioskTakeawayEnabled: z.boolean().optional(),

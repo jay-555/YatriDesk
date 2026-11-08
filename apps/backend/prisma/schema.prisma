@@ -188,6 +188,9 @@ model Branch {
   autoConfirmOrders       Boolean @default(false)
   autoConfirmReservations Boolean @default(false)
 
+  // What Billing opens on. DINE_IN shows the table grid. TAKEAWAY opens the menu.
+  posDefaultService String @default("DINE_IN")
+
   // Self-service kiosk (2026-10-17). kioskToken is the opaque, unguessable
   // credential in the public /kiosk/<token> URL (same idea as
   // Table.qrToken); null = kiosk switched off for this branch. The two

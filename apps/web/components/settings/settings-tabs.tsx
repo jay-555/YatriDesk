@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { hasPermission, useCurrentUser } from "@/hooks/use-auth";
 import { useNavBadges } from "@/hooks/use-nav-badges";
 import { useBranch } from "@/hooks/use-branch";
@@ -48,6 +49,8 @@ export function SettingsTabs() {
     ? new Set(["/settings/backup", "/settings/updates", "/settings/sync"])
     : new Set<string>();
 
+  const navRef = useRef<HTMLElement>(null);
+
   const visibleTabs = TABS.filter(
     (tab) =>
       !hostedOff.has(tab.href) &&
@@ -55,8 +58,20 @@ export function SettingsTabs() {
       (!tab.country || branchCountry === tab.country),
   );
 
+  useEffect(() => {
+    const nav = navRef.current;
+    const active = nav?.querySelector<HTMLElement>("[aria-current='page']");
+    if (!nav || !active) return;
+    const left = active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2;
+    nav.scrollTo({ left: Math.max(0, left) });
+  }, [pathname, visibleTabs.length]);
+
   return (
-    <nav className="flex gap-1 border-b border-border">
+    <nav
+      ref={navRef}
+      aria-label="Settings"
+      className="flex w-full min-w-0 gap-1 overflow-x-auto overscroll-x-contain border-b border-border"
+    >
       {visibleTabs.map((tab) => {
         const isActive =
           tab.href === "/settings" ? pathname === "/settings" : pathname?.startsWith(tab.href);
@@ -64,8 +79,9 @@ export function SettingsTabs() {
           <Link
             key={tab.href}
             href={tab.href}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2 border-b-2 px-3 pb-3 text-sm font-medium transition-colors",
+              "flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 pb-3 text-sm font-medium transition-colors",
               isActive
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground",

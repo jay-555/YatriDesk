@@ -1,8 +1,8 @@
 {
   "nav.dashboard": "Panel",
-  "nav.pos": "Punto de venta",
+  "nav.pos": "Cobro",
   "nav.tables": "Mesas",
-  "nav.orders": "Pedidos",
+  "nav.orders": "Pedidos en vivo",
   "nav.reservations": "Reservas",
   "nav.menu": "Menú",
   "nav.kds": "Pantalla de cocina",
