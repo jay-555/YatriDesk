@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, MonitorSmartphone, ShoppingCart } from "lucide-react";
+import { ChevronLeft, MonitorSmartphone } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { StatusNote, useNoteToast } from "@/components/ui/status-note";
@@ -18,6 +18,7 @@ import { ModifierPickerDialog } from "@/components/pos/modifier-picker-dialog";
 import { PosTablePicker } from "@/components/pos/pos-table-picker";
 import { ProductGrid } from "@/components/pos/product-grid";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useBranch } from "@/hooks/use-branch";
 import { useDisplaySettings } from "@/hooks/use-settings";
 import type { MenuItem } from "@/hooks/use-menu";
@@ -57,6 +58,7 @@ function PosPageInner() {
     display.data?.branch.posDefaultService === "TAKEAWAY" ? "TAKEAWAY" : "DINE_IN";
 
   const [lines, setLines] = useState<CartLine[]>([]);
+  const [menuSearch, setMenuSearch] = useState("");
   const [chosenType, setChosenType] = useState<PosOrderType | null>(
     preselectedTableId ? "DINE_IN" : parsedType,
   );
@@ -186,6 +188,22 @@ function PosPageInner() {
 
   const removeLine = (key: string) => setLines((prev) => prev.filter((l) => l.key !== key));
 
+  const decreaseItem = (item: MenuItem) => {
+    setLines((prev) => {
+      let last = -1;
+      for (let i = prev.length - 1; i >= 0; i -= 1) {
+        if (prev[i].menuItemId === item.id) {
+          last = i;
+          break;
+        }
+      }
+      if (last < 0) return prev;
+      return prev
+        .map((line, index) => (index === last ? { ...line, quantity: line.quantity - 1 } : line))
+        .filter((line) => line.quantity > 0);
+    });
+  };
+
   const handleSubmit = () => {
     if (checkingTable) return;
     const sentTableId = tableId;
@@ -271,29 +289,64 @@ function PosPageInner() {
   // it, same as arriving here from the Tables page's own "New order" link
   // (?tableId=... pre-fills this and never shows the picker).
   const showTablePicker = orderType === "DINE_IN" && !tableId && !activeOrder;
+  const selectedTable = tables.find((table) => table.id === tableId);
+  const tableLabel = selectedTable ? (selectedTable.name ?? `Table ${selectedTable.number}`) : null;
+  const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
+  const billTotal = lines.reduce((sum, line) => sum + line.unitPrice * line.quantity, 0);
+  const deliveryReady =
+    orderType !== "DELIVERY" ||
+    (delivery.address.trim().length >= 5 &&
+      delivery.pincode.trim().length >= 3 &&
+      delivery.phone.trim().length >= 6);
+  const sending = createOrder.isPending || addOrderItems.isPending;
+  const canSend =
+    lines.length > 0 &&
+    !activeOrder &&
+    (orderType !== "DINE_IN" || !!tableId) &&
+    deliveryReady &&
+    !checkingTable &&
+    !sending;
 
   return (
     <div className="flex h-[calc(100dvh-10rem)] flex-col gap-4 lg:h-[calc(100dvh-8rem)]">
       <StatusNote note={note} onClear={clearNote} />
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <KitchenProgressWidget branchId={branchId} />
+      <div className="flex flex-col gap-2">
+        <KitchenProgressWidget branchId={branchId} />
+        <div className="flex flex-wrap items-center gap-2">
+          {!activeOrder && (
+            <div className="w-full min-w-0 lg:w-auto lg:min-w-72 lg:flex-1">
+              <ServiceTypeBar value={orderType} onChange={setChosenType} />
+            </div>
+          )}
+          {orderType === "DINE_IN" && tableLabel && !showTablePicker ? (
+            <p className="inline-flex min-h-11 items-center rounded-lg border border-border px-3 text-sm font-medium">
+              {tableLabel}
+            </p>
+          ) : null}
+          {!showTablePicker ? (
+            <Input
+              value={menuSearch}
+              onChange={(e) => setMenuSearch(e.target.value)}
+              placeholder="Search menu…"
+              aria-label="Search menu"
+              className="h-11 min-w-48 flex-1"
+            />
+          ) : null}
+          <a
+            href="/customer-display"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            title="Opens the customer-facing screen in a new window — drag it to the second monitor"
+          >
+            <MonitorSmartphone className="h-3.5 w-3.5" />
+            Customer display
+          </a>
         </div>
-        <a
-          href="/customer-display"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          title="Opens the customer-facing screen in a new window — drag it to the second monitor"
-        >
-          <MonitorSmartphone className="h-3.5 w-3.5" />
-          Customer display
-        </a>
       </div>
 
       <BranchNotice />
 
-      {!activeOrder && <ServiceTypeBar value={orderType} onChange={setChosenType} />}
       <NeedsActionStrip branchId={branchId} />
       {orderType === "DELIVERY" && !activeOrder && (
         <div className="lg:hidden">
@@ -315,12 +368,21 @@ function PosPageInner() {
       ) : (
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden lg:grid-cols-[1fr_360px]">
           <Card className="min-h-0 overflow-hidden p-3 sm:p-5">
-            <ProductGrid branchId={branchId} onSelect={handleSelect} />
+            <ProductGrid
+              branchId={branchId}
+              search={menuSearch}
+              quantities={lines.reduce<Record<string, number>>((counts, line) => {
+                counts[line.menuItemId] = (counts[line.menuItemId] ?? 0) + line.quantity;
+                return counts;
+              }, {})}
+              onSelect={handleSelect}
+              onDecrease={decreaseItem}
+            />
           </Card>
 
           <Card
             className={cn(
-              "min-h-0 overflow-hidden p-5",
+              "flex h-full min-h-0 flex-col overflow-hidden p-5",
               cartOpen
                 ? "max-lg:fixed max-lg:inset-0 max-lg:z-40 max-lg:rounded-none max-lg:p-4 max-lg:pt-[max(1rem,env(safe-area-inset-top))] max-lg:pb-[max(1rem,env(safe-area-inset-bottom))]"
                 : "max-lg:hidden",
@@ -329,11 +391,12 @@ function PosPageInner() {
             <button
               type="button"
               onClick={() => setCartOpen(false)}
-              className="mb-3 -ml-1 flex items-center gap-1 text-sm font-medium text-muted-foreground lg:hidden"
+              className="mb-3 -ml-1 flex shrink-0 items-center gap-1 text-sm font-medium text-muted-foreground lg:hidden"
             >
               <ChevronLeft className="h-4 w-4" />
-              Back to menu
+              Menu
             </button>
+            <div className="h-full min-h-0 flex-1 overflow-y-auto">
             {activeOrder ? (
               <CheckoutPanel
                 order={activeOrder}
@@ -367,31 +430,40 @@ function PosPageInner() {
                 branchId={branchId}
               />
             )}
+            </div>
           </Card>
         </div>
       )}
 
-      {!showTablePicker && !cartOpen && (lines.length > 0 || activeOrder || existingOrder) && (
-        <button
-          type="button"
-          onClick={() => setCartOpen(true)}
-          className="fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 flex h-14 items-center justify-between rounded-2xl bg-primary px-4 text-primary-foreground shadow-lg active:scale-[0.98] lg:hidden"
-          style={{ backgroundImage: "var(--gradient-primary)" }}
-        >
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <ShoppingCart className="h-5 w-5" />
-            {activeOrder
-              ? `Order #${activeOrder.orderNumber} — pay`
-              : lines.length > 0
-                ? `View cart · ${lines.reduce((n, l) => n + l.quantity, 0)} items`
-                : `Open bill #${existingOrder?.orderNumber} — view`}
-          </span>
-          {!activeOrder && lines.length > 0 && (
-            <span className="text-sm font-semibold tabular-nums">
-              {formatCurrency(lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0))}
+      {!showTablePicker && !cartOpen && (itemCount > 0 || activeOrder || existingOrder) && (
+        <div className="fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 flex gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
+            className="flex h-14 min-w-0 flex-1 items-center justify-between gap-2 rounded-2xl border border-border bg-card px-4 text-left shadow-lg"
+          >
+            <span className="truncate text-sm font-semibold">
+              {activeOrder
+                ? `Order #${activeOrder.orderNumber}`
+                : itemCount > 0
+                  ? `${itemCount} ${itemCount === 1 ? "item" : "items"}`
+                  : `Bill #${existingOrder?.orderNumber}`}
             </span>
-          )}
-        </button>
+            {!activeOrder && itemCount > 0 ? (
+              <span className="shrink-0 text-sm font-semibold tabular-nums">{formatCurrency(billTotal)}</span>
+            ) : null}
+          </button>
+          {!activeOrder && itemCount > 0 ? (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!canSend}
+              className="h-14 shrink-0 rounded-2xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-lg disabled:opacity-50"
+            >
+              {sending ? "Sending…" : "Send to kitchen"}
+            </button>
+          ) : null}
+        </div>
       )}
 
       <ModifierPickerDialog

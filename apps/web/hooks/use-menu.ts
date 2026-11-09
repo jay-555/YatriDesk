@@ -44,7 +44,12 @@ export interface MenuItem {
   halfPrice: string | null;
   taxRatePercent: string;
   hsnCode?: string | null;
+  prepTimeMinutes: number | null;
   isVeg: boolean;
+  isVegan: boolean;
+  spiceLevel: "NONE" | "MILD" | "MEDIUM" | "HOT" | "EXTRA_HOT";
+  availableFrom: string | null;
+  availableTo: string | null;
   isActive: boolean;
   isCombo: boolean;
   category: { id: string; name: string };

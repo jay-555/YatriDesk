@@ -1,0 +1,13 @@
+name,category,price,half_price,tax_rate_percent,sku,description,station,is_veg,spice_level,prep_time_minutes,cost_price,calories,allergens,available_from,available_to,image_url,is_active
+Paneer Tikka,Starters,280,160,5,STR-001,Char-grilled cottage cheese with mint chutney,Tandoor,yes,MEDIUM,15,110,320,dairy,,,,yes
+Chicken 65,Starters,320,,5,STR-002,Crispy fried chicken with curry leaves,Main Kitchen,no,HOT,15,125,410,,,,,yes
+Veg Spring Roll,Starters,180,,5,STR-003,Crispy rolls with cabbage and carrot,Main Kitchen,yes,MILD,12,55,240,gluten,,,,yes
+Tomato Soup,Starters,140,90,5,STR-004,Cream of tomato soup,Main Kitchen,yes,NONE,8,35,160,dairy,,,,yes
+Dal Makhani,Main Course,260,150,5,MC-001,Slow-cooked black lentils in butter and cream,Main Kitchen,yes,MILD,20,70,350,dairy,,,,yes
+Paneer Butter Masala,Main Course,320,180,5,MC-002,Paneer in a tomato and butter gravy,Main Kitchen,yes,MILD,18,120,420,dairy,,,,yes
+Butter Chicken,Main Course,360,200,5,MC-003,Tandoori chicken in a mild tomato gravy,Main Kitchen,no,MEDIUM,20,140,480,dairy,,,,yes
+Jeera Rice,Main Course,160,,5,MC-004,Basmati rice tempered with cumin,Main Kitchen,yes,NONE,12,40,280,,,,,yes
+Masala Chai,Drinks,40,,5,DR-001,Served 6 AM to 10 PM,Bar,yes,NONE,5,8,90,dairy,06:00,22:00,,yes
+Fresh Lime Soda,Drinks,70,,5,DR-002,Sweet or salted,Bar,yes,NONE,3,15,60,,,,,yes
+Mango Lassi,Drinks,90,,5,DR-003,Yogurt blended with mango,Bar,yes,NONE,4,25,180,dairy,,,,yes
+Cold Coffee,Drinks,120,,5,DR-004,Blended coffee with milk and ice,Bar,yes,NONE,5,30,210,dairy,,,,yes

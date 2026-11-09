@@ -43,6 +43,7 @@ Required: `name`, `category`, `price`. Everything else is optional.
 | `calories` | 320 | Whole number |
 | `allergens` | dairy;nuts | Separate with `;` or `\|` |
 | `available_from`, `available_to` | 06:00, 22:00 | 24-hour. Set both or neither |
+| `image_url` | https://… or /api/uploads/… | The photo on the Billing card. A spreadsheet cannot hold the file itself. Upload it under Menu, then paste the address, or use any https link. A blank cell leaves the current photo |
 | `is_active` | yes / no | no = hidden from the POS. Default yes |
 
 **Matching.** A row is the same item as an existing one if the `sku` matches;
