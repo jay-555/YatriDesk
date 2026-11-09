@@ -101,6 +101,23 @@ describe('validateMenu', () => {
     expect(v.errors[0].messages.join(' ')).toMatch(/wrapped in "quotes"/);
   });
 
+  it('accepts a photo address and refuses anything that is not one', () => {
+    const ok = menu(
+      'name,category,price,image_url\nPoha,Breakfast,56,https://cdn.example.com/poha.jpg\nUpma,Breakfast,48,/api/uploads/upma.jpg',
+    );
+    expect(ok.errors).toEqual([]);
+    expect(ok.rows.map((r) => r.imageUrl)).toEqual([
+      'https://cdn.example.com/poha.jpg',
+      '/api/uploads/upma.jpg',
+    ]);
+    const bad = menu(
+      'name,category,price,image\nPoha,Breakfast,56,javascript:alert(1)\nUpma,Breakfast,48,not a url',
+    );
+    expect(bad.rows).toEqual([]);
+    expect(bad.errors[0].messages[0]).toMatch(/https/);
+    expect(bad.errors[1].messages[0]).toMatch(/https/);
+  });
+
   it('reads veg / spice / active in common spellings', () => {
     const v = menu(
       'name,category,price,is_veg,spice_level,is_active\nA,C,1,Non-Veg,very hot,No\nB,C,1,Y,Medium,TRUE',

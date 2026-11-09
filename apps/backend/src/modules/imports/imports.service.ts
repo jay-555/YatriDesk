@@ -365,6 +365,7 @@ export class ImportsService {
         match.availableFrom,
       );
       set('availableTo', 'available to', r.availableTo, match.availableTo);
+      set('imageUrl', 'image', r.imageUrl, match.imageUrl);
       set('isActive', 'active', r.isActive, match.isActive);
       if (changes.length === 0) {
         planned.push({
@@ -431,6 +432,7 @@ export class ImportsService {
             allergens: r.allergens ?? [],
             availableFrom: r.availableFrom,
             availableTo: r.availableTo,
+            imageUrl: r.imageUrl,
             isActive: r.isActive ?? true,
             sortOrder: itemBase + i + 1,
           })),

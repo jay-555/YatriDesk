@@ -6,7 +6,9 @@ import {
   parseNumber,
   parseText,
   parseTime,
+  type Parsed,
 } from './fields';
+import { looksLikeFormula } from './csv';
 import type { ParsedCsv } from './csv';
 
 export const SPICE_LEVELS = [
@@ -44,6 +46,7 @@ export const MENU_COLUMNS = {
   allergens: ['allergens', 'allergen'],
   availableFrom: ['availablefrom', 'from'],
   availableTo: ['availableto', 'to'],
+  imageUrl: ['imageurl', 'image', 'photo', 'photourl', 'picture'],
   isActive: ['isactive', 'active', 'status'],
 } as const;
 export type MenuColumn = keyof typeof MENU_COLUMNS;
@@ -68,6 +71,8 @@ export interface MenuRow {
   allergens?: string[];
   availableFrom?: string;
   availableTo?: string;
+  /** https address, or a photo already uploaded at /api/uploads/…. Blank leaves the current photo. */
+  imageUrl?: string;
   isActive?: boolean;
 }
 
@@ -108,6 +113,44 @@ export const menuKey = (r: Pick<MenuRow, 'name' | 'category' | 'sku'>) =>
   r.sku
     ? `sku:${r.sku.toLowerCase()}`
     : `name:${r.name.toLowerCase()}|${r.category.toLowerCase()}`;
+
+const UPLOADED_IMAGE = /^\/api\/uploads\/[\w.-]+$/;
+
+/** A spreadsheet cell cannot hold the photo file. It can hold an address the card already knows how to show. */
+export function parseImageUrl(raw: string): Parsed<string | undefined> {
+  const v = raw.trim();
+  if (v === '') return { ok: true, value: undefined };
+  if (v.length > 500) {
+    return { ok: false, error: 'Image URL is longer than 500 characters' };
+  }
+  if (looksLikeFormula(v)) {
+    return {
+      ok: false,
+      error: `Image URL starts with "${v[0]}", which spreadsheets treat as a formula - remove it`,
+    };
+  }
+  if (UPLOADED_IMAGE.test(v)) return { ok: true, value: v };
+  let url: URL;
+  try {
+    url = new URL(v);
+  } catch {
+    return {
+      ok: false,
+      error:
+        'Image URL must be an https address, or a photo already uploaded in the app (/api/uploads/…)',
+    };
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    return {
+      ok: false,
+      error: 'Image URL must start with https:// or http://',
+    };
+  }
+  if (!url.hostname) {
+    return { ok: false, error: 'Image URL is missing a host name' };
+  }
+  return { ok: true, value: v };
+}
 
 export function validateMenu(csv: ParsedCsv): ValidatedImport<MenuRow> {
   const { index, unknown } = mapHeaders(csv.headers, MENU_COLUMNS);
@@ -219,6 +262,7 @@ export function validateMenu(csv: ParsedCsv): ValidatedImport<MenuRow> {
       allergens: take(parseList(cell('allergens'), 'Allergens')),
       availableFrom: take(parseTime(cell('availableFrom'), 'Available from')),
       availableTo: take(parseTime(cell('availableTo'), 'Available to')),
+      imageUrl: take(parseImageUrl(cell('imageUrl'))),
       isActive: take(parseBool(cell('isActive'), 'Active')),
     };
     if (

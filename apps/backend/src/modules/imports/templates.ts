@@ -19,6 +19,7 @@ export const MENU_HEADERS = [
   'allergens',
   'available_from',
   'available_to',
+  'image_url',
   'is_active',
 ] as const;
 
@@ -40,6 +41,7 @@ export const MENU_EXAMPLE: (string | number)[][] = [
     'dairy',
     '',
     '',
+    '',
     'yes',
   ],
   [
@@ -56,6 +58,7 @@ export const MENU_EXAMPLE: (string | number)[][] = [
     15,
     125,
     410,
+    '',
     '',
     '',
     '',
@@ -78,6 +81,7 @@ export const MENU_EXAMPLE: (string | number)[][] = [
     'dairy',
     '',
     '',
+    '',
     'yes',
   ],
   [
@@ -95,6 +99,7 @@ export const MENU_EXAMPLE: (string | number)[][] = [
     12,
     260,
     'gluten;dairy',
+    '',
     '',
     '',
     'yes',
@@ -116,6 +121,7 @@ export const MENU_EXAMPLE: (string | number)[][] = [
     'dairy',
     '06:00',
     '22:00',
+    '',
     'yes',
   ],
   [
@@ -132,6 +138,7 @@ export const MENU_EXAMPLE: (string | number)[][] = [
     3,
     15,
     60,
+    '',
     '',
     '',
     '',
@@ -152,6 +159,7 @@ export const MENU_EXAMPLE: (string | number)[][] = [
     22,
     300,
     'dairy;gluten',
+    '',
     '',
     '',
     'yes',
