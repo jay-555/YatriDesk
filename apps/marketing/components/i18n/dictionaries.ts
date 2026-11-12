@@ -1,0 +1,93 @@
+/** Headings, nav and CTAs in English and Hindi. Body copy stays English. */
+export const en = {
+  "nav.features": "Features",
+  "nav.solutions": "Solutions",
+  "nav.pricing": "Pricing",
+  "nav.resources": "Resources",
+  "nav.login": "Login",
+  "nav.menu": "Menu",
+
+  "cta.demo": "Book a Free Demo",
+  "cta.demoShort": "Book a Demo",
+  "cta.tour": "Watch 2-min tour",
+  "cta.trial": "Start free trial",
+  "cta.pricing": "See pricing",
+  "cta.whatsapp": "Chat on WhatsApp",
+  "cta.allFeatures": "Explore every feature",
+
+  "hero.eyebrow": "Restaurant POS for India",
+  "hero.title": "Run your restaurant, not your paperwork.",
+
+  "types.title": "Built for every kind of kitchen",
+  "features.eyebrow": "Everything in one place",
+  "features.title": "From the first KOT to the last report",
+  "how.eyebrow": "How it works",
+  "how.title": "Up and billing in three steps",
+  "tour.eyebrow": "Product tour",
+  "tour.title": "See your day, one screen at a time",
+  "solutions.eyebrow": "Solutions",
+  "solutions.title": "Shaped around how you serve",
+  "why.eyebrow": "Why YatriDesk",
+  "why.title": "The calm, dependable way to run service",
+  "numbers.title": "Busy kitchens already count on it",
+  "integrations.eyebrow": "Integrations roadmap",
+  "integrations.title": "Connections we're building next",
+  "testimonials.eyebrow": "What owners say",
+  "testimonials.title": "Less chaos at the counter",
+  "pricing.eyebrow": "Pricing",
+  "pricing.title": "Simple plans. No hardware lock-in.",
+  "faq.eyebrow": "FAQ",
+  "faq.title": "Questions owners ask us",
+  "final.title": "Ready to simplify your restaurant?",
+  "contact.title": "Book your free demo",
+  "notFound.title": "This table isn't on our floor plan.",
+} as const;
+
+export type DictKey = keyof typeof en;
+
+export const hi: Record<DictKey, string> = {
+  "nav.features": "फ़ीचर्स",
+  "nav.solutions": "समाधान",
+  "nav.pricing": "प्राइसिंग",
+  "nav.resources": "संसाधन",
+  "nav.login": "लॉग इन",
+  "nav.menu": "मेन्यू",
+
+  "cta.demo": "फ़्री डेमो बुक करें",
+  "cta.demoShort": "डेमो बुक करें",
+  "cta.tour": "2 मिनट का टूर देखें",
+  "cta.trial": "फ़्री ट्रायल शुरू करें",
+  "cta.pricing": "प्राइसिंग देखें",
+  "cta.whatsapp": "WhatsApp पर बात करें",
+  "cta.allFeatures": "सभी फ़ीचर्स देखें",
+
+  "hero.eyebrow": "भारत के रेस्टोरेंट्स के लिए POS",
+  "hero.title": "रेस्टोरेंट चलाइए, कागज़ी काम नहीं।",
+
+  "types.title": "हर तरह की किचन के लिए बना",
+  "features.eyebrow": "सब कुछ एक जगह",
+  "features.title": "पहले KOT से आख़िरी रिपोर्ट तक",
+  "how.eyebrow": "कैसे काम करता है",
+  "how.title": "तीन आसान कदमों में बिलिंग शुरू",
+  "tour.eyebrow": "प्रोडक्ट टूर",
+  "tour.title": "पूरा दिन, एक-एक स्क्रीन पर",
+  "solutions.eyebrow": "समाधान",
+  "solutions.title": "आपके सर्विस के तरीके के हिसाब से",
+  "why.eyebrow": "YatriDesk क्यों",
+  "why.title": "सर्विस चलाने का शांत और भरोसेमंद तरीका",
+  "numbers.title": "व्यस्त किचन पहले से इस पर भरोसा करती हैं",
+  "integrations.eyebrow": "इंटीग्रेशन रोडमैप",
+  "integrations.title": "जो कनेक्शन हम आगे बना रहे हैं",
+  "testimonials.eyebrow": "मालिकों की राय",
+  "testimonials.title": "काउंटर पर कम भागदौड़",
+  "pricing.eyebrow": "प्राइसिंग",
+  "pricing.title": "आसान प्लान। कोई हार्डवेयर बंधन नहीं।",
+  "faq.eyebrow": "सवाल-जवाब",
+  "faq.title": "मालिक हमसे जो पूछते हैं",
+  "final.title": "अपना रेस्टोरेंट आसान बनाने के लिए तैयार?",
+  "contact.title": "अपना फ़्री डेमो बुक करें",
+  "notFound.title": "यह टेबल हमारे फ़्लोर प्लान में नहीं है।",
+};
+
+export const dictionaries = { en, hi } as const;
+export type Lang = keyof typeof dictionaries;

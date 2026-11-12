@@ -125,6 +125,66 @@
   --sidebar-ring: #FB7185;
 }
 
+.dashboard-theme {
+  --background: #FBF6EE;
+  --foreground: #14161A;
+  --card: #FFFFFF;
+  --card-foreground: #14161A;
+  --popover: #FFFFFF;
+  --popover-foreground: #14161A;
+  --primary: #B23A0A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3EADB;
+  --secondary-foreground: #14161A;
+  --muted: #F3EADB;
+  --muted-foreground: #5B6270;
+  --accent: #FFE8D6;
+  --accent-foreground: #8F2E07;
+  --border: #E7DCCB;
+  --input: #D6C6AE;
+  --ring: #B23A0A;
+  --success: #276B43;
+  --warning: #EA580C;
+  --chart-1: #B23A0A;
+  --chart-2: #276B43;
+  --chart-3: #EA580C;
+  --chart-4: #6366F1;
+  --chart-5: #5B6270;
+  --shadow-card: 0 1px 2px rgb(20 22 26 / 0.04), 0 8px 24px -12px rgb(20 22 26 / 0.12);
+  --shadow-card-hover: 0 2px 4px rgb(20 22 26 / 0.05), 0 24px 48px -20px rgb(20 22 26 / 0.25);
+  --gradient-primary: linear-gradient(135deg, #C94A16 0%, #B23A0A 55%, #8F2E07 100%);
+}
+
+.dark .dashboard-theme {
+  --background: #0F1114;
+  --foreground: #F3EEE6;
+  --card: #171A1F;
+  --card-foreground: #F3EEE6;
+  --popover: #171A1F;
+  --popover-foreground: #F3EEE6;
+  --primary: #FF7A2E;
+  --primary-foreground: #14161A;
+  --secondary: #1D2128;
+  --secondary-foreground: #F3EEE6;
+  --muted: #1D2128;
+  --muted-foreground: #A3A9B5;
+  --accent: #3A2316;
+  --accent-foreground: #FF9152;
+  --border: #2A2F37;
+  --input: #3A414C;
+  --ring: #FF7A2E;
+  --success: #4CAF7A;
+  --warning: #FF8A45;
+  --chart-1: #FF7A2E;
+  --chart-2: #4CAF7A;
+  --chart-3: #FF8A45;
+  --chart-4: #818CF8;
+  --chart-5: #A3A9B5;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-card-hover: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 48px -20px rgb(0 0 0 / 0.7);
+  --gradient-primary: linear-gradient(135deg, #FF9152 0%, #FF7A2E 55%, #E85D12 100%);
+}
+
 /* Customer kiosk (/kiosk/*): always the light palette, whatever the device's
    dark-mode setting, so contrast is predictable from standing distance. Only
    custom properties are redefined here (no element rules), so Tailwind

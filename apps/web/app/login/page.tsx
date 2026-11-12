@@ -73,9 +73,10 @@ export default function LoginPage() {
         className="w-full max-w-sm"
       >
         <div className="mb-10 flex flex-col items-center gap-2 text-center">
-          <Link href="/">
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- "/" may be served by the marketing site zone (proxy.ts): needs a full page load */}
+          <a href="/" aria-label="YatriDesk home">
             <Logo size={44} />
-          </Link>
+          </a>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             YatriDesk
           </h1>

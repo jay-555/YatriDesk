@@ -19,12 +19,13 @@ export function MarketingNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5">
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- "/" may be served by the marketing site zone (proxy.ts): needs a full page load */}
+        <a href="/" className="flex items-center gap-2.5">
           <Logo size={30} />
           <span className="text-[15px] font-semibold tracking-tight text-foreground">
             YatriDesk
           </span>
-        </Link>
+        </a>
 
         <nav className="hidden items-center gap-8 md:flex">
           {links.map((l) => (

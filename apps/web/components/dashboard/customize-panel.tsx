@@ -89,7 +89,11 @@ export function CustomizePanel({
   );
 
   return (
-    <Card className="flex flex-col gap-4 p-5" role="region" aria-label="Customize dashboard">
+    <Card
+      className="flex flex-col gap-4 rounded-[20px] border border-border/80 bg-card p-5 shadow-[var(--shadow-card)]"
+      role="region"
+      aria-label="Customize dashboard"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-[18px] font-medium text-foreground">Customize your dashboard</h2>
         <div className="flex items-center gap-2">

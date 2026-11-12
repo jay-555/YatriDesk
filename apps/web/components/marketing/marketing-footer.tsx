@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { downloadHref } from "@/lib/downloads";
 
@@ -35,10 +34,11 @@ export function MarketingFooter() {
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-10 sm:grid-cols-[1.5fr_repeat(3,1fr)]">
           <div>
-            <Link href="/" className="flex items-center gap-2.5">
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- "/" may be served by the marketing site zone (proxy.ts): needs a full page load */}
+            <a href="/" className="flex items-center gap-2.5">
               <Logo size={28} />
               <span className="text-sm font-semibold text-foreground">YatriDesk</span>
-            </Link>
+            </a>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
               Offline-first restaurant management, self-hosted on your own
               server.
