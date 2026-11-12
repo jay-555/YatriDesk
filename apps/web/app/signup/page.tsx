@@ -2,12 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterDto } from "@yatrideesk/types";
-import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { StatusNote, useNoteToast } from "@/components/ui/status-note";
-import { Logo } from "@/components/layout/logo";
+import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -19,7 +18,6 @@ export default function SignupPage() {
   const router = useRouter();
   const register = useRegister();
   const { note, clear, toast } = useNoteToast();
-  const prefersReducedMotion = useReducedMotion();
   const {
     register: field,
     handleSubmit,
@@ -36,48 +34,42 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-background px-4 py-10">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(50%_50%_at_50%_0%,color-mix(in_oklch,var(--primary),transparent_90%),transparent)]"
-      />
-      <motion.div
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-sm"
-      >
-        <div className="mb-10 flex flex-col items-center gap-2 text-center">
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- "/" may be served by the marketing site zone (proxy.ts): needs a full page load */}
-          <a href="/" aria-label="YatriDesk home">
-            <Logo size={44} />
-          </a>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            YatriDesk
-          </h1>
-          <p className="text-sm text-muted-foreground">Set up your restaurant</p>
+    <AuthCard
+      title="Set up your restaurant"
+      description="Create your owner account and add your first branch."
+      className="max-w-lg"
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link href="/login" className="font-semibold text-primary underline-offset-4 hover:underline">
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 sm:gap-5">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="restaurantName" className="font-medium text-foreground">Restaurant name</Label>
+          <Input
+            id="restaurantName"
+            autoComplete="organization"
+            placeholder="e.g. Spice Route"
+            className="h-12 rounded-xl bg-background px-3"
+            {...field("restaurantName")}
+          />
+          {errors.restaurantName && (
+            <p className="text-xs text-destructive">{errors.restaurantName.message}</p>
+          )}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="restaurantName">Restaurant name</Label>
-            <Input
-              id="restaurantName"
-              autoComplete="organization"
-              placeholder="e.g. Spice Route"
-              {...field("restaurantName")}
-            />
-            {errors.restaurantName && (
-              <p className="text-xs text-destructive">{errors.restaurantName.message}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="branchName">First branch name</Label>
+            <Label htmlFor="branchName" className="font-medium text-foreground">First branch name</Label>
             <Input
               id="branchName"
               placeholder="Main Branch"
               defaultValue="Main Branch"
+              className="h-12 rounded-xl bg-background px-3"
               {...field("branchName")}
             />
             {errors.branchName && (
@@ -86,57 +78,52 @@ export default function SignupPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="ownerName">Your name</Label>
+            <Label htmlFor="ownerName" className="font-medium text-foreground">Your name</Label>
             <Input
               id="ownerName"
               autoComplete="name"
               placeholder="e.g. Priya Sharma"
+              className="h-12 rounded-xl bg-background px-3"
               {...field("ownerName")}
             />
             {errors.ownerName && (
               <p className="text-xs text-destructive">{errors.ownerName.message}</p>
             )}
           </div>
+        </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@restaurant.com"
-              {...field("email")}
-            />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-          </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="email" className="font-medium text-foreground">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@restaurant.com"
+            className="h-12 rounded-xl bg-background px-3"
+            {...field("email")}
+          />
+          {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+        </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
-            <PasswordInput
-              id="password"
-              
-              autoComplete="new-password"
-              placeholder="At least 8 characters"
-              {...field("password")}
-            />
-            {errors.password && (
-              <p className="text-xs text-destructive">{errors.password.message}</p>
-            )}
-          </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="password" className="font-medium text-foreground">Password</Label>
+          <PasswordInput
+            id="password"
+            autoComplete="new-password"
+            placeholder="At least 8 characters"
+            className="h-12 rounded-xl bg-background px-3"
+            {...field("password")}
+          />
+          {errors.password && (
+            <p className="text-xs text-destructive">{errors.password.message}</p>
+          )}
+        </div>
 
-          <StatusNote note={note} onClear={clear} />
-          <Button type="submit" className="mt-2 h-11" disabled={register.isPending}>
-            {register.isPending ? "Creating your account…" : "Create account"}
-          </Button>
-        </form>
-
-        <p className="mt-8 text-center text-xs text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/login" className="font-medium text-foreground hover:underline">
-            Sign in
-          </Link>
-        </p>
-      </motion.div>
-    </main>
+        <StatusNote note={note} onClear={clear} />
+        <Button type="submit" className="mt-1 h-12 w-full rounded-xl text-base" disabled={register.isPending}>
+          {register.isPending ? "Creating your account…" : "Create account"}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }

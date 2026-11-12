@@ -2,13 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginDto } from "@yatrideesk/types";
-import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AlertCircle } from "lucide-react";
-import { Logo } from "@/components/layout/logo";
+import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -23,7 +22,6 @@ export default function LoginPage() {
   const [needsCode, setNeedsCode] = useState(false);
   // Shown inline under the form (a toast vanishes before it can be read).
   const [error, setError] = useState<string | null>(null);
-  const prefersReducedMotion = useReducedMotion();
   const {
     register,
     handleSubmit,
@@ -61,106 +59,88 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-background px-4">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(50%_50%_at_50%_0%,color-mix(in_oklch,var(--primary),transparent_90%),transparent)]"
-      />
-      <motion.div
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-sm"
-      >
-        <div className="mb-10 flex flex-col items-center gap-2 text-center">
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- "/" may be served by the marketing site zone (proxy.ts): needs a full page load */}
-          <a href="/" aria-label="YatriDesk home">
-            <Logo size={44} />
-          </a>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            YatriDesk
-          </h1>
-          <p className="text-sm text-muted-foreground">Sign in to manage your restaurant</p>
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email or phone number</Label>
-            <Input
-              id="email"
-              type="text"
-              autoComplete="username"
-              inputMode="email"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              enterKeyHint="next"
-              autoFocus
-              className="h-11"
-              placeholder="you@restaurant.com or phone number"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
-            <PasswordInput
-              id="password"
-              
-              autoComplete="current-password"
-              enterKeyHint="go"
-              className="h-11"
-              placeholder="Your password"
-              {...register("password")}
-            />
-            {errors.password && (
-              <p className="text-xs text-destructive">{errors.password.message}</p>
-            )}
-          </div>
-
-          {needsCode && (
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="totp">Verification code</Label>
-              <Input
-                id="totp"
-                inputMode="text"
-                autoComplete="one-time-code"
-                autoFocus
-                placeholder="6-digit code or recovery code"
-                {...register("totp")}
-              />
-              <p className="text-xs text-muted-foreground">
-                Open your authenticator app, or use one of your recovery codes.
-              </p>
-              {errors.totp && <p className="text-xs text-destructive">{errors.totp.message}</p>}
-            </div>
-          )}
-
-          {error && (
-            <div
-              role="alert"
-              className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
-            >
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <Button type="submit" className="mt-2 h-12 text-base" disabled={login.isPending}>
-            {login.isPending ? "Signing in…" : "Sign in"}
-          </Button>
-        </form>
-
-        <p className="mt-8 text-center text-xs text-muted-foreground">
+    <AuthCard
+      title="Welcome back"
+      description="Sign in to manage your restaurant."
+      footer={
+        <>
           New restaurant?{" "}
-          <Link href="/signup" className="font-medium text-foreground hover:underline">
+          <Link href="/signup" className="font-semibold text-primary underline-offset-4 hover:underline">
             Create an account
           </Link>
-        </p>
-      </motion.div>
-    </main>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="email" className="font-medium text-foreground">Email or phone number</Label>
+          <Input
+            id="email"
+            type="text"
+            autoComplete="username"
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="next"
+            autoFocus
+            className="h-12 rounded-xl bg-background px-3"
+            placeholder="you@restaurant.com or phone number"
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="text-xs text-destructive">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="password" className="font-medium text-foreground">Password</Label>
+          <PasswordInput
+            id="password"
+            autoComplete="current-password"
+            enterKeyHint="go"
+            className="h-12 rounded-xl bg-background px-3"
+            placeholder="Your password"
+            {...register("password")}
+          />
+          {errors.password && (
+            <p className="text-xs text-destructive">{errors.password.message}</p>
+          )}
+        </div>
+
+        {needsCode && (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="totp" className="font-medium text-foreground">Verification code</Label>
+            <Input
+              id="totp"
+              inputMode="text"
+              autoComplete="one-time-code"
+              autoFocus
+              placeholder="6-digit code or recovery code"
+              className="h-12 rounded-xl bg-background px-3"
+              {...register("totp")}
+            />
+            <p className="text-xs text-muted-foreground">
+              Open your authenticator app, or use one of your recovery codes.
+            </p>
+            {errors.totp && <p className="text-xs text-destructive">{errors.totp.message}</p>}
+          </div>
+        )}
+
+        {error && (
+          <div
+            role="alert"
+            className="flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <Button type="submit" className="mt-1 h-12 w-full rounded-xl text-base" disabled={login.isPending}>
+          {login.isPending ? "Signing in…" : "Sign in"}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }

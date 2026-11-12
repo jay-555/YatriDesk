@@ -125,7 +125,7 @@
   --sidebar-ring: #FB7185;
 }
 
-.dashboard-theme {
+.brand-theme {
   --background: #FBF6EE;
   --foreground: #14161A;
   --card: #FFFFFF;
@@ -155,7 +155,7 @@
   --gradient-primary: linear-gradient(135deg, #C94A16 0%, #B23A0A 55%, #8F2E07 100%);
 }
 
-.dark .dashboard-theme {
+.dark .brand-theme {
   --background: #0F1114;
   --foreground: #F3EEE6;
   --card: #171A1F;
