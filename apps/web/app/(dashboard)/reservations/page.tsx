@@ -3,6 +3,7 @@
 import type { ReservationStatusDto } from "@yatrideesk/types";
 import { Check, X, Users } from "lucide-react";
 import { useState } from "react";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { AddReservationDialog } from "@/components/reservations/add-reservation-dialog";
 import { ChannelBadge } from "@/components/orders/channel-badges";
 import { ReservationManageDialog } from "@/components/reservations/reservation-manage-dialog";
@@ -49,10 +50,11 @@ export default function ReservationsPage() {
   const visible = reservations?.filter((r) => channel === "all" || r.channel === channel);
 
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-[32px] font-semibold tracking-tight text-foreground">
+          <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Reservations
           </h1>
           <p className="text-sm text-muted-foreground">Upcoming bookings across all floors</p>
@@ -183,5 +185,6 @@ export default function ReservationsPage() {
         )}
       </Card>
     </div>
+    </BrandedPage>
   );
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { toast } from "@/lib/toast";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { AddressesCard } from "@/components/customers/addresses-card";
 import { RewardsCard } from "@/components/customers/rewards-card";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
@@ -26,7 +27,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [isEditing, setIsEditing] = useState(false);
 
   if (isLoading || !customer) {
-    return <Skeleton className="h-96 rounded-2xl" />;
+    return (
+      <BrandedPage>
+        <Skeleton className="h-96 rounded-2xl" />
+      </BrandedPage>
+    );
   }
 
   const onDelete = () => {
@@ -42,6 +47,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   };
 
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -52,7 +58,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             <ArrowLeft className="h-3.5 w-3.5" />
             Customers
           </Link>
-          <h1 className="mt-2 text-[32px] font-semibold tracking-tight text-foreground">
+          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             {customer.name ?? "Unnamed customer"}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -172,5 +178,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         />
       )}
     </div>
+    </BrandedPage>
   );
 }

@@ -16,6 +16,7 @@ RUN apk add --no-cache python3 make g++ linux-headers eudev-dev libusb-dev pkgco
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY apps/backend/package.json apps/backend/package.json
 COPY apps/web/package.json apps/web/package.json
+COPY apps/marketing/package.json apps/marketing/package.json
 COPY packages/types/package.json packages/types/package.json
 RUN pnpm install --frozen-lockfile
 

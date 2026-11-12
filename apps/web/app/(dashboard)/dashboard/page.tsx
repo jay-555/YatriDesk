@@ -1,6 +1,7 @@
 "use client";
 
 import { BranchNotice } from "@/components/layout/branch-notice";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { AlertTriangle, ChefHat, SlidersHorizontal, ClipboardList, Flame, Globe, HandCoins, ReceiptText, Store, Timer, TrendingUp, Trash2, UserRound, Users, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -55,13 +56,13 @@ function StatCard({
       href={href}
       aria-label={`${label}: ${value}. Open details`}
       className={cn(
-        "group block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+        "group block rounded-[20px] outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
         className,
       )}
     >
     <Card
       className={cn(
-        "flex h-full flex-col transition group-hover:border-primary/40 group-hover:shadow-md",
+        "flex h-full flex-col rounded-[20px] border border-border/80 shadow-[var(--shadow-card)] transition group-hover:border-primary/40 group-hover:shadow-[var(--shadow-card-hover)]",
         hero
           ? "justify-between gap-6 border-success/25 bg-gradient-to-br from-success/10 via-card to-card p-6 sm:p-7"
           : compact
@@ -155,10 +156,11 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <BrandedPage>
+    <div className="flex min-h-full flex-col gap-6 sm:gap-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-[32px] font-semibold tracking-tight text-foreground">
+          <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             {greeting}
             {firstName ? `, ${firstName}` : ""}
           </h1>
@@ -314,8 +316,8 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 xl:grid-cols-4" style={{ order: 100 }}>
-        <Card {...slot("card", "tables", "flex flex-col gap-1 p-6 lg:col-span-1")}>
-          <h2 className="mb-3 text-[18px] font-medium text-foreground">Tables</h2>
+        <Card {...slot("card", "tables", "flex flex-col gap-1 rounded-[20px] border border-border/80 bg-card p-6 shadow-[var(--shadow-card)] lg:col-span-1")}>
+          <h2 className="mb-3 font-heading text-lg font-semibold text-foreground">Tables</h2>
           {data && (
             <>
               <TableStatusRow label="Available" count={data.tables.available} dotClass="bg-success" href="/tables" />
@@ -326,8 +328,8 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        <Card {...slot("card", "kitchen", "flex flex-col gap-1 p-6 lg:col-span-1")}>
-          <h2 className="mb-3 flex items-center gap-2 text-[18px] font-medium text-foreground">
+        <Card {...slot("card", "kitchen", "flex flex-col gap-1 rounded-[20px] border border-border/80 bg-card p-6 shadow-[var(--shadow-card)] lg:col-span-1")}>
+          <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-semibold text-foreground">
             <ChefHat className="h-[18px] w-[18px] text-muted-foreground" />
             Kitchen queue
           </h2>
@@ -341,8 +343,8 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        <Card {...slot("card", "recent", "flex flex-col gap-3 p-6 lg:col-span-1")}>
-          <h2 className="flex items-center gap-2 text-[18px] font-medium text-foreground">
+        <Card {...slot("card", "recent", "flex flex-col gap-3 rounded-[20px] border border-border/80 bg-card p-6 shadow-[var(--shadow-card)] lg:col-span-1")}>
+          <h2 className="flex items-center gap-2 font-heading text-lg font-semibold text-foreground">
             <Timer className="h-[18px] w-[18px] text-muted-foreground" />
             Recent transactions
           </h2>
@@ -388,8 +390,8 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card {...slot("card", "channels", "flex flex-col gap-3 p-6 lg:col-span-1")}>
-          <h2 className="flex items-center gap-2 text-[18px] font-medium text-foreground">
+        <Card {...slot("card", "channels", "flex flex-col gap-3 rounded-[20px] border border-border/80 bg-card p-6 shadow-[var(--shadow-card)] lg:col-span-1")}>
+          <h2 className="flex items-center gap-2 font-heading text-lg font-semibold text-foreground">
             <ReceiptText className="h-[18px] w-[18px] text-muted-foreground" />
             Order channels
           </h2>
@@ -439,6 +441,7 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
+    </BrandedPage>
   );
 }
 

@@ -46,6 +46,9 @@ const nextConfig: NextConfig = {
   // socket.io's endpoint is literally "/socket.io/" — the backend 404s on the
   // slash-less form, so Next must not redirect it.
   skipTrailingSlashRedirect: true,
+  // The public marketing site ("/", /pricing, ...) is forwarded by proxy.ts,
+  // not here: rewrites are baked at build time, the proxy reads MARKETING_URL
+  // at runtime so the published image works with or without it.
   async rewrites() {
     return [
       { source: "/api/:path*", destination: `${BACKEND_URL}/api/:path*` },

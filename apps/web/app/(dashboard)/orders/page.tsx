@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { ScanOrderInput } from "@/components/orders/scan-order-input";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { DeleteOrdersDialog } from "@/components/orders/delete-orders-dialog";
 import { ChannelBadge, TypeBadge } from "@/components/orders/channel-badges";
 import { Badge } from "@/components/ui/badge";
@@ -97,10 +98,11 @@ function OrdersView() {
     setSelected(allSelected ? new Set() : new Set(finished.map((o) => o.id)));
 
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Live orders</h1>
+          <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Live orders</h1>
           <p className="text-sm text-muted-foreground">
             Accept new online orders and manage everything in progress
           </p>
@@ -221,6 +223,7 @@ function OrdersView() {
         onDeleted={() => setSelected(new Set())}
       />
     </div>
+    </BrandedPage>
   );
 }
 

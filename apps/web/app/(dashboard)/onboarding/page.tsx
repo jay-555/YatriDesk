@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BrandedPage } from "@/components/layout/branded-page";
 
 const STEPS = [
   { href: "/settings", title: "Branch and tax", body: "On General, set the branch address, GSTIN, FSSAI, composition or regular GST, and the hours guests can order." },
@@ -13,9 +14,10 @@ const STEPS = [
 
 export default function OnboardingPage() {
   return (
+    <BrandedPage>
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">Set up this outlet</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Set up this outlet</h1>
         <p className="text-sm text-muted-foreground">Six steps from an empty account to a bill you can hand a guest.</p>
       </div>
       <ol className="flex flex-col gap-3">
@@ -28,5 +30,6 @@ export default function OnboardingPage() {
         ))}
       </ol>
     </div>
+    </BrandedPage>
   );
 }

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { StatusNote, useNoteToast } from "@/components/ui/status-note";
 import { publishDisplay } from "@/lib/customer-display";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { BranchNotice } from "@/components/layout/branch-notice";
 import { CartPanel, type DeliveryDetails, type PosOrderType } from "@/components/pos/cart-panel";
 import { DeliveryFields } from "@/components/pos/delivery-fields";
@@ -308,7 +309,14 @@ function PosPageInner() {
     !sending;
 
   return (
+    <BrandedPage>
     <div className="flex h-[calc(100dvh-10rem)] flex-col gap-4 lg:h-[calc(100dvh-8rem)]">
+      <div>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          Billing
+        </h1>
+        <p className="text-sm text-muted-foreground">Build a bill and send orders to the kitchen</p>
+      </div>
       <StatusNote note={note} onClear={clearNote} />
       <div className="flex flex-col gap-2">
         <KitchenProgressWidget branchId={branchId} />
@@ -474,5 +482,6 @@ function PosPageInner() {
         allowCustom
       />
     </div>
+    </BrandedPage>
   );
 }

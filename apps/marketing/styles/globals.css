@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens. Contrast (WCAG AA) was checked for every text/background
+ * pair used, including the darker --bg-alt band: white on --brand = 6.0:1,
+ * --brand on --bg-alt = 5.0:1, --herb on --herb-soft = 5.6:1, --fg-muted on
+ * --bg-alt = 5.1:1. --saffron (#EA580C) is decorative / large text only.
+ */
+:root {
+  --ink: #14161a;
+  --ink-soft: #2a2e35;
+  --cream: #fbf6ee;
+  --cream-2: #f3eadb;
+
+  --bg: var(--cream);
+  --bg-alt: var(--cream-2);
+  --surface: #ffffff;
+  --surface-2: #fdfaf5;
+  --fg: var(--ink);
+  --fg-muted: #5b6270;
+  --border: #e7dccb;
+  --border-strong: #d6c6ae;
+
+  --brand: #b23a0a; /* chilli: buttons, links */
+  --brand-hover: #8f2e07;
+  --brand-fg: #ffffff;
+  --saffron: #ea580c; /* decorative accent */
+  --saffron-soft: #ffe8d6;
+  --herb: #276b43;
+  --herb-soft: #e3f1e8;
+  --turmeric: #f2b33d;
+
+  --shadow-soft: 0 1px 2px rgb(20 22 26 / 0.04), 0 8px 24px -12px rgb(20 22 26 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(20 22 26 / 0.05), 0 24px 48px -20px rgb(20 22 26 / 0.25);
+  --glow: radial-gradient(60% 60% at 70% 30%, rgb(234 88 12 / 0.18), transparent 70%),
+    radial-gradient(40% 50% at 15% 80%, rgb(47 125 79 / 0.12), transparent 70%);
+}
+
+.dark {
+  --bg: #0f1114;
+  --bg-alt: #15181d;
+  --surface: #171a1f;
+  --surface-2: #1d2128;
+  --fg: #f3eee6;
+  --fg-muted: #a3a9b5;
+  --border: #2a2f37;
+  --border-strong: #3a414c;
+
+  --brand: #ff7a2e; /* ink text on it = 6.9:1 */
+  --brand-hover: #ff9152;
+  --brand-fg: #14161a;
+  --saffron: #ff8a45;
+  --saffron-soft: #3a2316;
+  --herb: #4caf7a;
+  --herb-soft: #17291f;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 48px -20px rgb(0 0 0 / 0.7);
+  --glow: radial-gradient(60% 60% at 70% 30%, rgb(255 122 46 / 0.16), transparent 70%),
+    radial-gradient(40% 50% at 15% 80%, rgb(76 175 122 / 0.1), transparent 70%);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-cream: var(--cream);
+  --color-bg: var(--bg);
+  --color-bg-alt: var(--bg-alt);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-fg: var(--brand-fg);
+  --color-saffron: var(--saffron);
+  --color-saffron-soft: var(--saffron-soft);
+  --color-herb: var(--herb);
+  --color-herb-soft: var(--herb-soft);
+  --color-turmeric: var(--turmeric);
+
+  --font-sans: var(--font-inter), var(--font-deva), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-deva), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 20px;
+  --radius-panel: 28px;
+  --radius-chip: 12px;
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+
+  --text-display: clamp(2.25rem, 1.6rem + 3.2vw, 4.25rem);
+  --text-display--line-height: 1.04;
+  --text-h2: clamp(1.75rem, 1.35rem + 1.8vw, 2.75rem);
+  --text-h2--line-height: 1.12;
+  --text-lead: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  --text-lead--line-height: 1.6;
+
+  --animate-rise: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-fade: fade 0.35s ease-out both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 3px solid var(--saffron);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--saffron-soft);
+    color: var(--fg);
+  }
+  dialog::backdrop {
+    background: rgb(15 17 20 / 0.55);
+    backdrop-filter: blur(4px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+  /* Scroll reveal (see RevealObserver). Hidden only once JS is ready. */
+  [data-reveal] {
+    transition:
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal-ready [data-reveal]:not(.is-visible) {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@utility glass {
+  background: color-mix(in oklab, var(--surface) 72%, transparent);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+}
+
+@utility bg-glow {
+  background-image: var(--glow);
+}
+
+@utility lift {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+/* Below-the-fold sections: the browser skips their layout/paint until they near the viewport. */
+@utility cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

@@ -1,0 +1,33 @@
+# yatridesk.cloud: adds the public marketing site (apps/marketing) in front of
+# the product. Layer it on top of the normal stack:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.marketing.yml up -d --build
+#
+# Visitors still reach ONE port (the web service). The web app's proxy
+# (apps/web/proxy.ts) forwards "/", /pricing, /contact, /privacy, /terms, the
+# site's form endpoints, metadata files and assets to the marketing container;
+# /login, /order/..., /api/... and every other app path work exactly as before.
+# Self-hosted installs don't use this file, so their "/" stays the product's
+# own landing page.
+services:
+  marketing:
+    build:
+      context: .
+      dockerfile: apps/marketing/Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: "${MARKETING_SITE_URL:-https://yatridesk.cloud}"
+    image: ghcr.io/jay-555/yatrideesk-marketing:${APP_VERSION:-dev}
+    container_name: yatrideesk-marketing
+    restart: unless-stopped
+    # Internal only: reachable from the web service over the Docker network.
+    expose:
+      - "3000"
+
+  web:
+    environment:
+      # Read at runtime by apps/web/proxy.ts, so in-app updates of the web
+      # image keep the marketing site in place.
+      MARKETING_URL: "http://marketing:3000"
+    depends_on:
+      - backend
+      - marketing

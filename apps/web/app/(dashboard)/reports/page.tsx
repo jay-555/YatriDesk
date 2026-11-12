@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Download, Printer } from "lucide-react";
 import { useState } from "react";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -52,9 +53,10 @@ export default function ReportsPage() {
   const groups = [...new Set(catalog?.map((c) => c.group))];
 
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
       <div className="print:hidden">
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Reports</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Reports</h1>
         <p className="text-sm text-muted-foreground">Filter by date, print, export to Excel, PDF or CSV, or email on a schedule</p>
       </div>
 
@@ -152,5 +154,6 @@ export default function ReportsPage() {
         </div>
       </div>
     </div>
+    </BrandedPage>
   );
 }

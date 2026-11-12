@@ -4,6 +4,7 @@ import { Gift, Pencil, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "@/lib/toast";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { AddCustomerDialog } from "@/components/customers/add-customer-dialog";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ export default function CustomersPage() {
   };
 
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
@@ -126,5 +128,6 @@ export default function CustomersPage() {
         />
       )}
     </div>
+    </BrandedPage>
   );
 }

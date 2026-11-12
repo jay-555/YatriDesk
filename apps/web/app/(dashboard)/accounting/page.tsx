@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -298,9 +299,10 @@ export default function AccountingPage() {
   const tabs = TABS.filter((t) => bankOn || t !== "bank");
   const [tab, setTab] = useState<Tab>("expenses");
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Accounting</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Accounting</h1>
         <p className="text-sm text-muted-foreground">Expenses, cash close, profit &amp; loss, balance sheet, budgets, bank reconciliation, tax and branches</p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -327,5 +329,6 @@ export default function AccountingPage() {
       {tab === "gst" && <GstTab branchId={branchId} />}
       {tab === "branches" && <BranchesTab />}
     </div>
+    </BrandedPage>
   );
 }
