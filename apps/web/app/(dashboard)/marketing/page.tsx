@@ -2,6 +2,7 @@
 
 import { Download } from "lucide-react";
 import { useState } from "react";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -266,9 +267,10 @@ export default function MarketingPage() {
   const { branchId } = useBranch();
   const [tab, setTab] = useState<Tab>("coupons");
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Marketing</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Marketing</h1>
         <p className="text-sm text-muted-foreground">Coupons, happy hours and customer campaigns</p>
       </div>
       <div className="flex gap-2">
@@ -282,5 +284,6 @@ export default function MarketingPage() {
       {tab === "happy hour" && <HappyHour branchId={branchId} />}
       {tab === "campaigns" && <Campaigns branchId={branchId} />}
     </div>
+    </BrandedPage>
   );
 }

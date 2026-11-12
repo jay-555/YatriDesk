@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { StatusNote, useNoteToast } from "@/components/ui/status-note";
 import { AdjustLineDialog, PayRunDialog, SlipButton } from "@/components/team/payroll-dialogs";
 import { Suspense, useState } from "react";
@@ -383,8 +384,10 @@ function TeamView() {
 
 export default function TeamPage() {
   return (
-    <Suspense fallback={null}>
-      <TeamView />
-    </Suspense>
+    <BrandedPage>
+      <Suspense fallback={null}>
+        <TeamView />
+      </Suspense>
+    </BrandedPage>
   );
 }

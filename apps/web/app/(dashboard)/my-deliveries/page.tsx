@@ -2,6 +2,7 @@
 
 import { Bike, CheckCircle2, ChefHat, MapPin, Navigation, Phone, ShoppingBag, XCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -219,17 +220,21 @@ export default function MyDeliveriesPage() {
 
   if (me.isError) {
     return (
-      <p role="alert" className="text-sm text-destructive">
-        {me.error instanceof ApiError ? me.error.message : "Could not load your deliveries."}
-      </p>
+      <BrandedPage>
+        <p role="alert" className="text-sm text-destructive">
+          {me.error instanceof ApiError ? me.error.message : "Could not load your deliveries."}
+        </p>
+      </BrandedPage>
     );
   }
   if (me.isLoading || !me.data) {
     return (
-      <div className="flex flex-col gap-4">
-        <Skeleton className="h-20 rounded-2xl" />
-        <Skeleton className="h-40 rounded-2xl" />
-      </div>
+      <BrandedPage>
+        <div className="flex flex-col gap-4">
+          <Skeleton className="h-20 rounded-2xl" />
+          <Skeleton className="h-40 rounded-2xl" />
+        </div>
+      </BrandedPage>
     );
   }
   const d = me.data;
@@ -237,9 +242,10 @@ export default function MyDeliveriesPage() {
   const done = deliveries.data?.done ?? [];
 
   return (
+    <BrandedPage>
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
       <div>
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground">My deliveries</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">My deliveries</h1>
         <p className="flex items-center gap-1 text-sm text-muted-foreground">
           <MapPin className="h-3.5 w-3.5" aria-hidden />
           {d.name} · {d.location.name}
@@ -336,5 +342,6 @@ export default function MyDeliveriesPage() {
         </section>
       )}
     </div>
+    </BrandedPage>
   );
 }

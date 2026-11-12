@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,9 +82,10 @@ export default function AttendancePage() {
   const { data: records, isLoading } = useAttendance(branchId, date, canManage);
 
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Attendance</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Attendance</h1>
         <p className="text-sm text-muted-foreground">Clock in and out of your shift</p>
       </div>
 
@@ -143,5 +145,6 @@ export default function AttendancePage() {
         </>
       )}
     </div>
+    </BrandedPage>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -148,9 +149,10 @@ export default function OperationsPage() {
   const { branchId } = useBranch();
   const [tab, setTab] = useState<"equipment" | "documents">("equipment");
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Operations</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Operations</h1>
         <p className="text-sm text-muted-foreground">Equipment servicing and your digital documents</p>
       </div>
       <div className="flex gap-2">
@@ -162,5 +164,6 @@ export default function OperationsPage() {
       </div>
       {tab === "equipment" ? <EquipmentTab branchId={branchId} /> : <DocumentsTab branchId={branchId} />}
     </div>
+    </BrandedPage>
   );
 }
