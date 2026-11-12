@@ -16,6 +16,7 @@ import type {
 } from '@yatrideesk/types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RealtimeGateway } from '../../realtime/realtime.gateway';
+import { nextFreePositions } from './table-placement';
 
 @Injectable()
 export class TablesService {
@@ -47,7 +48,18 @@ export class TablesService {
 
   async createTable(branchId: string, dto: TableDto) {
     await this.assertFloorInBranch(branchId, dto.floorId);
-    const table = await this.prisma.table.create({ data: dto });
+    let { posX, posY } = dto;
+    if (posX === undefined || posY === undefined) {
+      [{ posX, posY }] = nextFreePositions(
+        await this.floorRects(dto.floorId),
+        1,
+        dto.width,
+        dto.height,
+      );
+    }
+    const table = await this.prisma.table.create({
+      data: { ...dto, posX, posY },
+    });
     this.realtime.emitToBranch(branchId, 'table.updated', table);
     return table;
   }
@@ -76,6 +88,10 @@ export class TablesService {
       );
     }
 
+    const positions = nextFreePositions(
+      await this.floorRects(dto.floorId),
+      numbers.length,
+    );
     const tables = await this.prisma.$transaction(
       numbers.map((number, index) =>
         this.prisma.table.create({
@@ -85,8 +101,7 @@ export class TablesService {
             capacity: dto.capacity,
             shape: dto.shape,
             color: dto.color,
-            posX: 20 + (index % 5) * 100,
-            posY: 20 + Math.floor(index / 5) * 100,
+            ...positions[index],
           },
         }),
       ),
@@ -174,6 +189,13 @@ export class TablesService {
     // image can't be used to enumerate other tables' ids/data
     const qrToken = randomBytes(16).toString('hex');
     return this.prisma.table.update({ where: { id }, data: { qrToken } });
+  }
+
+  private floorRects(floorId: string) {
+    return this.prisma.table.findMany({
+      where: { floorId },
+      select: { posX: true, posY: true, width: true, height: true },
+    });
   }
 
   private async assertFloorInBranch(branchId: string, floorId: string) {

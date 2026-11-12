@@ -23,8 +23,9 @@ export const tableSchema = z.object({
   number: z.string().min(1),
   name: z.string().optional(),
   capacity: z.number().int().positive().default(2),
-  posX: z.number().default(0),
-  posY: z.number().default(0),
+  // Left out on create, the server picks a free spot on the floor.
+  posX: z.number().optional(),
+  posY: z.number().optional(),
   width: z.number().positive().default(80),
   height: z.number().positive().default(80),
   rotation: z.number().default(0),

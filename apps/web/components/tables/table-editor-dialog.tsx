@@ -115,7 +115,7 @@ export function TableEditorDialog({
     }
 
     createTable.mutate(
-      { floorId, ...dto, posX: 20, posY: 20, width: 80, height: 80, rotation: 0 },
+      { floorId, ...dto, width: 80, height: 80, rotation: 0 },
       {
         onSuccess: () => {
           toast.success(`Table ${number} added`);
