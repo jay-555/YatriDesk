@@ -2,6 +2,7 @@
 
 import { LayoutGrid, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { AddFloorDialog } from "@/components/tables/add-floor-dialog";
 import { EditableTableTile } from "@/components/tables/editable-table-tile";
 import { RenameFloorDialog } from "@/components/tables/rename-floor-dialog";
@@ -84,11 +85,12 @@ export default function TablesPage() {
   };
 
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
       <TableRequestsBar branchId={branchId} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div>
-          <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Tables</h1>
+          <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Tables</h1>
           <p className="text-sm text-muted-foreground">
             {editMode
               ? "Drag tables to match your floor — changes save automatically"
@@ -217,6 +219,7 @@ export default function TablesPage() {
         />
       )}
     </div>
+    </BrandedPage>
   );
 }
 

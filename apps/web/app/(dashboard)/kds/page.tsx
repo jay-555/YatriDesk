@@ -2,6 +2,7 @@
 
 import type { KotStatusDto } from "@yatrideesk/types";
 import { useEffect } from "react";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { BranchNotice } from "@/components/layout/branch-notice";
 import { PerformanceWidget } from "@/components/kds/performance-widget";
 import { IncomingOrderCard } from "@/components/kds/incoming-order-card";
@@ -45,9 +46,10 @@ export default function KdsPage() {
   const pendingOrders = incoming.data ?? [];
 
   return (
+    <BrandedPage>
     <div className="flex min-h-[calc(100dvh-10rem)] flex-col gap-4 lg:h-[calc(100dvh-8rem)]">
       <div>
-        <h1 className="text-2xl font-semibold sm:text-[32px] tracking-tight text-foreground">
+        <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-4xl">
           Kitchen Display
         </h1>
         <p className="text-sm text-muted-foreground">Live order tickets by station</p>
@@ -144,5 +146,6 @@ export default function KdsPage() {
         </div>
       )}
     </div>
+    </BrandedPage>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { BranchNotice } from "@/components/layout/branch-notice";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { AlertTriangle, ChefHat, SlidersHorizontal, ClipboardList, Flame, Globe, HandCoins, ReceiptText, Store, Timer, TrendingUp, Trash2, UserRound, Users, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -155,7 +156,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="brand-theme -mx-4 -mt-4 flex min-h-full flex-col gap-6 bg-background px-4 py-6 sm:-mx-6 sm:-mt-6 sm:gap-7 sm:px-6 sm:py-8 lg:-mx-8 lg:-mt-8 lg:px-8">
+    <BrandedPage>
+    <div className="flex min-h-full flex-col gap-6 sm:gap-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -439,6 +441,7 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
+    </BrandedPage>
   );
 }
 

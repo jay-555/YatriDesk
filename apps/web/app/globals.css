@@ -379,6 +379,22 @@
   [data-slot="button"][data-variant="default"]:active:not(:disabled) {
     transform: translateY(1px);
   }
+  .brand-theme [data-slot="button"][data-variant="default"],
+  .brand-theme button.bg-primary {
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.18) inset, 0 6px 14px -6px color-mix(in srgb, var(--primary) 55%, transparent);
+  }
+  .brand-theme h1,
+  .brand-theme h2,
+  .brand-theme h3 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+  }
+  .brand-theme [data-slot="card"] {
+    border-width: 1px;
+    border-color: var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+  }
   table {
     font-variant-numeric: tabular-nums;
   }

@@ -3,6 +3,7 @@
 import { EyeOff, Layers, Leaf, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/lib/toast";
+import { BrandedPage } from "@/components/layout/branded-page";
 import { AddCategoryDialog } from "@/components/menu/add-category-dialog";
 import { ImportCsvDialog } from "@/components/imports/import-csv-dialog";
 import { BulkPriceDialog } from "@/components/menu/bulk-price-dialog";
@@ -70,10 +71,11 @@ export default function MenuPage() {
   };
 
   return (
+    <BrandedPage>
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[32px] font-semibold tracking-tight text-foreground">Menu</h1>
+          <h1 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Menu</h1>
           <p className="text-sm text-muted-foreground">{canManage ? "Categories, items, and pricing" : "Categories, items, and pricing (view only)"}</p>
         </div>
       </div>
@@ -392,5 +394,6 @@ export default function MenuPage() {
         />
       )}
     </div>
+    </BrandedPage>
   );
 }
