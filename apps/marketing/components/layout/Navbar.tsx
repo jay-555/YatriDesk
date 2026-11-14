@@ -29,7 +29,7 @@ export function Navbar() {
     <header
       className={cn(
         "sticky top-0 z-40 border-b transition-[background-color,border-color,box-shadow] duration-300",
-        scrolled ? "glass border-line shadow-soft" : "border-transparent bg-transparent",
+        scrolled ? "border-line bg-surface/95 shadow-soft backdrop-blur-md" : "border-transparent bg-transparent",
       )}
     >
       <Container className="flex h-16 items-center justify-between gap-4 lg:h-18">
@@ -40,7 +40,7 @@ export function Navbar() {
             <Link
               key={item.key}
               href={item.href}
-              className="inline-flex h-11 items-center rounded-full px-3.5 text-sm font-medium text-fg-muted transition-colors hover:bg-bg-alt hover:text-fg"
+              className="inline-flex h-11 items-center rounded-full px-3.5 text-sm font-medium text-fg transition-colors hover:bg-bg-alt"
             >
               <T k={item.key} />
             </Link>
@@ -54,7 +54,7 @@ export function Navbar() {
             <ThemeToggle />
             <a
               href={site.loginUrl}
-              className="inline-flex h-11 items-center rounded-full px-3.5 text-sm font-medium text-fg-muted transition-colors hover:bg-bg-alt hover:text-fg"
+              className="inline-flex h-11 items-center rounded-full px-3.5 text-sm font-medium text-fg transition-colors hover:bg-bg-alt"
             >
               <T k="nav.login" />
             </a>

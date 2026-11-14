@@ -12,12 +12,12 @@ export function LanguageToggle({ className }: { className?: string }) {
       type="button"
       onClick={() => setLang(next)}
       className={cn(
-        "inline-flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-medium text-fg-muted transition-colors hover:bg-bg-alt hover:text-fg",
+        "inline-flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold text-fg transition-colors hover:bg-bg-alt",
         className,
       )}
       aria-label={lang === "en" ? "हिंदी में देखें (Switch to Hindi)" : "Switch to English"}
     >
-      <Languages className="size-4" aria-hidden />
+      <Languages className="size-5" strokeWidth={2.25} aria-hidden />
       <span lang={next === "hi" ? "hi" : "en"}>{next === "hi" ? "हिं" : "EN"}</span>
     </button>
   );
