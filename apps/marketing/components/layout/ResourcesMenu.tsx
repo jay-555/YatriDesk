@@ -47,14 +47,22 @@ export function ResourcesMenu() {
   };
 
   return (
-    <div ref={root} className="relative" onKeyDown={onKeyDown}>
+    <div
+      ref={root}
+      className="relative"
+      onKeyDown={onKeyDown}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => {
+        if (!root.current?.contains(document.activeElement)) setOpen(false);
+      }}
+    >
       <button
         ref={trigger}
         type="button"
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex h-11 items-center gap-1 rounded-full px-3.5 text-sm font-medium text-fg-muted transition-colors hover:bg-bg-alt hover:text-fg aria-expanded:text-fg"
+        className="inline-flex h-11 items-center gap-1 rounded-full px-3.5 text-sm font-medium text-fg transition-colors hover:bg-bg-alt aria-expanded:bg-bg-alt"
       >
         <T k="nav.resources" />
         <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden />
@@ -62,7 +70,7 @@ export function ResourcesMenu() {
       <div
         id={id}
         hidden={!open}
-        className="absolute top-full left-1/2 z-50 mt-2 w-72 -translate-x-1/2 animate-fade rounded-card border border-line bg-surface p-2 shadow-lift"
+        className="absolute top-full left-1/2 z-50 mt-2 w-80 -translate-x-1/2 animate-fade rounded-card border border-line bg-surface p-2 shadow-lift before:absolute before:inset-x-0 before:-top-3 before:h-3 before:content-['']"
       >
         <ul>
           {site.nav.resources.map((r) => (
