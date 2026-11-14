@@ -1,0 +1,63 @@
+name: Deploy VPS
+
+# After CI succeeds on a push to master (including PR merges), SSH into the
+# yatridesk.cloud VPS, pull the repo, and rebuild with the marketing overlay.
+# Manual runs: Actions → Deploy VPS → Run workflow.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to the VPS from git
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check deploy secrets
+        id: check
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+          KEY: ${{ secrets.VPS_SSH_KEY }}
+          USER_NAME: ${{ secrets.VPS_USER }}
+        run: |
+          if [ -n "$HOST" ] && [ -n "$KEY" ] && [ -n "$USER_NAME" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "VPS deploy skipped. Set VPS_HOST, VPS_USER and VPS_SSH_KEY as repository secrets."
+          fi
+
+      - name: Deploy over SSH (git pull + docker build on VPS)
+        if: steps.check.outputs.enabled == 'true'
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          # Marketing + Next builds on a small VPS can take a while.
+          command_timeout: 40m
+          script: |
+            set -eu
+            app="${HOME}/src/YatriDesk"
+            if [ ! -d "$app/.git" ]; then
+              echo "Missing $app — clone https://github.com/jay-555/YatriDesk.git there first." >&2
+              exit 1
+            fi
+            # Pull first so the latest deploy script is used, then run it.
+            git -C "$app" fetch origin
+            git -C "$app" checkout master
+            git -C "$app" pull --ff-only origin master
+            if [ ! -f "$app/infra/vps/deploy-from-git.sh" ]; then
+              echo "Missing $app/infra/vps/deploy-from-git.sh after pull." >&2
+              exit 1
+            fi
+            # SKIP_PULL=1: we already pulled above.
+            SKIP_PULL=1 sh "$app/infra/vps/deploy-from-git.sh"
