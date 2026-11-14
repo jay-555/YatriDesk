@@ -63,16 +63,16 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="brand-theme flex h-dvh min-h-0 overflow-hidden bg-background">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+      <aside className="hidden h-full min-h-0 w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
         <div className="flex h-16 items-center gap-2 px-5">
           <RestaurantBrand />
         </div>
         <div className="px-3 pb-3">
           <BranchSwitcher />
         </div>
-        <div className="flex-1 overflow-y-auto py-2">
+        <div className="app-sidebar-scroll min-h-0 flex-1 overflow-y-auto py-2">
           <SidebarNav user={user} />
         </div>
         <BrandFooter />
@@ -80,7 +80,7 @@ export function AppShell({
 
       {/* Mobile drawer */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-72 bg-sidebar p-0">
+        <SheetContent side="left" className="brand-theme w-72 bg-sidebar p-0">
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <div className="flex h-16 items-center gap-2 px-5">
             <RestaurantBrand />
@@ -88,15 +88,15 @@ export function AppShell({
           <div className="px-3 pb-3">
             <BranchSwitcher />
           </div>
-          <div className="flex-1 overflow-y-auto py-2">
+          <div className="app-sidebar-scroll min-h-0 flex-1 overflow-y-auto py-2">
             <SidebarNav user={user} onNavigate={() => setMobileOpen(false)} />
           </div>
           <BrandFooter />
         </SheetContent>
       </Sheet>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur sm:px-6">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -112,7 +112,7 @@ export function AppShell({
             <UserMenu user={user} />
           </div>
         </header>
-        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8">{children}</main>
+        <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8">{children}</main>
         <EntityDialogHost />
       </div>
       <MobileBottomNav user={user} onMore={() => setMobileOpen(true)} />

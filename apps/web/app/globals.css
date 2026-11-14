@@ -132,27 +132,35 @@
   --card-foreground: #14161A;
   --popover: #FFFFFF;
   --popover-foreground: #14161A;
-  --primary: #B23A0A;
+  --primary: #C2410C;
   --primary-foreground: #FFFFFF;
   --secondary: #F3EADB;
   --secondary-foreground: #14161A;
   --muted: #F3EADB;
   --muted-foreground: #5B6270;
   --accent: #FFE8D6;
-  --accent-foreground: #8F2E07;
+  --accent-foreground: #9A3412;
   --border: #E7DCCB;
   --input: #D6C6AE;
-  --ring: #B23A0A;
+  --ring: #C2410C;
   --success: #276B43;
   --warning: #EA580C;
-  --chart-1: #B23A0A;
+  --sidebar: #FFFCF7;
+  --sidebar-foreground: #14161A;
+  --sidebar-primary: #C2410C;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFE8D6;
+  --sidebar-accent-foreground: #9A3412;
+  --sidebar-border: #E7DCCB;
+  --sidebar-ring: #C2410C;
+  --chart-1: #C2410C;
   --chart-2: #276B43;
   --chart-3: #EA580C;
   --chart-4: #6366F1;
   --chart-5: #5B6270;
   --shadow-card: 0 1px 2px rgb(20 22 26 / 0.04), 0 8px 24px -12px rgb(20 22 26 / 0.12);
   --shadow-card-hover: 0 2px 4px rgb(20 22 26 / 0.05), 0 24px 48px -20px rgb(20 22 26 / 0.25);
-  --gradient-primary: linear-gradient(135deg, #C94A16 0%, #B23A0A 55%, #8F2E07 100%);
+  --gradient-primary: linear-gradient(135deg, #EA580C 0%, #C2410C 55%, #9A3412 100%);
 }
 
 .dark .brand-theme {
@@ -162,7 +170,7 @@
   --card-foreground: #F3EEE6;
   --popover: #171A1F;
   --popover-foreground: #F3EEE6;
-  --primary: #FF7A2E;
+  --primary: #FB923C;
   --primary-foreground: #14161A;
   --secondary: #1D2128;
   --secondary-foreground: #F3EEE6;
@@ -172,17 +180,50 @@
   --accent-foreground: #FF9152;
   --border: #2A2F37;
   --input: #3A414C;
-  --ring: #FF7A2E;
+  --ring: #FB923C;
   --success: #4CAF7A;
   --warning: #FF8A45;
-  --chart-1: #FF7A2E;
+  --sidebar: #171A1F;
+  --sidebar-foreground: #F3EEE6;
+  --sidebar-primary: #FB923C;
+  --sidebar-primary-foreground: #14161A;
+  --sidebar-accent: #3A2316;
+  --sidebar-accent-foreground: #FF9152;
+  --sidebar-border: #2A2F37;
+  --sidebar-ring: #FB923C;
+  --chart-1: #FB923C;
   --chart-2: #4CAF7A;
   --chart-3: #FF8A45;
   --chart-4: #818CF8;
   --chart-5: #A3A9B5;
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
   --shadow-card-hover: 0 2px 4px rgb(0 0 0 / 0.3), 0 24px 48px -20px rgb(0 0 0 / 0.7);
-  --gradient-primary: linear-gradient(135deg, #FF9152 0%, #FF7A2E 55%, #E85D12 100%);
+  --gradient-primary: linear-gradient(135deg, #FDBA74 0%, #FB923C 55%, #EA580C 100%);
+}
+
+.app-sidebar-scroll {
+  scrollbar-color: var(--sidebar-border) transparent;
+  scrollbar-width: thin;
+}
+
+.app-sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-sidebar-scroll::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background: var(--sidebar-border);
+  background-clip: padding-box;
+}
+
+.app-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--sidebar-primary);
+  background-clip: padding-box;
 }
 
 /* Customer kiosk (/kiosk/*): always the light palette, whatever the device's
